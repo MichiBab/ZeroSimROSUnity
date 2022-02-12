@@ -276,23 +276,35 @@ namespace ZO.ROS.Unity {
             // ROSBridgeConnection.UnAdvertiseService(_namespace + "/spawn_zosim_model");
             ROSBridgeConnection.Stop();
         }
+        
+        private static long MIN_TF_TIME_IN_MS = 4; //equals 250 hz
+        private static long last_tf_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
+        private static long MIN_CLOCK_TIME_IN_MS = 10; //equals 100 hz
+        private static long last_clock_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         // Update is called once per frame
         void Update() {
             // publish map transform
-            if (ROSBridgeConnection.IsConnected) {
-
+            if (ROSBridgeConnection.IsConnected){
+                var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
-                if(_transformBroadcast.transforms.Length>0){
-                    ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
+                if (_transformBroadcast.transforms.Length > 0){
+                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS){
+                        last_tf_timestamp = time_now;
+                        ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
+                    }
+
                     _transformsToBroadcast.Clear();
                 }
 
                 // simulation clock
                 Clock.Update();
-                ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
+                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS){
+                    last_clock_timestamp = time_now;
+                    ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
+                }
             }
 
         }
