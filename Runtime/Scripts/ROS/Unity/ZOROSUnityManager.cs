@@ -277,7 +277,7 @@ namespace ZO.ROS.Unity {
             ROSBridgeConnection.Stop();
         }
         
-        private static long MIN_TF_TIME_IN_MS = 4; //equals 250 hz
+        private static long MIN_TF_TIME_IN_MS = 3; //equals 300 hz
         private static long last_tf_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         private static long MIN_CLOCK_TIME_IN_MS = 10; //equals 100 hz
@@ -290,13 +290,10 @@ namespace ZO.ROS.Unity {
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
-                if (_transformBroadcast.transforms.Length > 0){
-                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS){
+                if (_transformBroadcast.transforms.Length > 0 && time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS){
                         last_tf_timestamp = time_now;
                         ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
-                    }
-
-                    _transformsToBroadcast.Clear();
+                        _transformsToBroadcast.Clear();
                 }
 
                 // simulation clock
