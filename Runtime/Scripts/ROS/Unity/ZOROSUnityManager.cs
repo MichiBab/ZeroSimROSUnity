@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -285,8 +285,10 @@ namespace ZO.ROS.Unity {
 
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
-                ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
-                _transformsToBroadcast.Clear();
+                if(_transformBroadcast.transforms.Length>0){
+                    ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
+                    _transformsToBroadcast.Clear();
+                }
 
                 // simulation clock
                 Clock.Update();
