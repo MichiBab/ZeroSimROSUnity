@@ -277,7 +277,7 @@ namespace ZO.ROS.Unity {
             ROSBridgeConnection.Stop();
         }
         
-        private static long MIN_TF_TIME_IN_MS = 3; //equals 300 hz
+        private static long MIN_TF_TIME_IN_MS = 2; //equals 500 hz
         private static long last_tf_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         private static long MIN_CLOCK_TIME_IN_MS = 10; //equals 100 hz
