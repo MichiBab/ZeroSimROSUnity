@@ -203,10 +203,10 @@ namespace ZO.ROS.MessageTypes.Std {
 
     }
 
-    public class EmptyServiceRespone : ZOROSMessageInterface {
+    public class EmptyServiceResponse : ZOROSMessageInterface {
 
         [Newtonsoft.Json.JsonIgnore]
-        public string MessageType { get { return EmptyServiceRespone.Type; } }
+        public string MessageType { get { return EmptyServiceResponse.Type; } }
 
         [Newtonsoft.Json.JsonIgnore]
         public static string Type = "std_msgs/Empty";
