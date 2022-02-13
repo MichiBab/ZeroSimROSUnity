@@ -314,10 +314,31 @@ namespace ZO.ROS.Unity {
         private static long MIN_CLOCK_TIME_IN_MS = 10; //equals 100 hz
         private static long last_clock_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
+
+        private static bool paused_state = false;
         // Update is called once per frame
         void Update() {
             // publish map transform
             if (ROSBridgeConnection.IsConnected) {
+                //check if paused
+                if (pause_queue.Count > 0) {
+                    bool to_pause_flag;
+                    if (pause_queue.TryDequeue(out to_pause_flag)) {
+                        if (to_pause_flag) {
+                            Time.timeScale = 0.0f;
+                            paused_state = true;
+                            return;
+                        } else {
+                            Time.timeScale = 50.0f;
+                            paused_state = false;
+                        }
+                    }
+                }
+
+
+                if (paused_state) {
+                    return;
+                }
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
@@ -329,17 +350,6 @@ namespace ZO.ROS.Unity {
                     _transformsToBroadcast.Clear();
                 }
 
-                //check if paused
-                if (pause_queue.Count > 0) {
-                    bool to_pause_flag;
-                    if (pause_queue.TryDequeue(out to_pause_flag)) {
-                        if (to_pause_flag) {
-                            Time.timeScale = 0.0f;
-                        } else {
-                            Time.timeScale = 50.0f;
-                        }
-                    }
-                }
 
                 // simulation clock
                 Clock.Update();
