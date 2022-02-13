@@ -335,15 +335,11 @@ namespace ZO.ROS.Unity {
                     }
                 }
 
-
-                if (paused_state) {
-                    return;
-                }
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
                 if (_transformBroadcast.transforms.Length > 0) {
-                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS) {
+                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS && !paused_state) {
                         last_tf_timestamp = time_now;
                         ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
                     }
@@ -353,7 +349,7 @@ namespace ZO.ROS.Unity {
 
                 // simulation clock
                 Clock.Update();
-                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS) {
+                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS && !paused_state) {
                     last_clock_timestamp = time_now;
                     ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
                 }
