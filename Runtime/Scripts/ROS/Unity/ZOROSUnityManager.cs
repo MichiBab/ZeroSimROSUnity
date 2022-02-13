@@ -9,8 +9,11 @@ using Newtonsoft.Json.Linq;
 using ZO.ROS.MessageTypes.TF2;
 using ZO.ROS.MessageTypes.Geometry;
 using ZO.ROS.MessageTypes.ROSGraph;
+using ZO.ROS.MessageTypes.Std;
+using ZO.ROS.MessageTypes.ZOSim;
 using ZO.ROS.Publisher;
 using ZO.Util;
+using System.Collections.Concurrent;
 
 namespace ZO.ROS.Unity {
 
@@ -19,6 +22,8 @@ namespace ZO.ROS.Unity {
     /// </summary>
     [ExecuteAlways]
     public class ZOROSUnityManager : MonoBehaviour {
+
+        private static ConcurrentQueue<bool> pause_queue = new ConcurrentQueue<bool>();
 
         /// <summary>
         /// The default ROS namespace for this simulation.
@@ -162,7 +167,7 @@ namespace ZO.ROS.Unity {
         /// Singleton access to this ROS Unity Manager.
         /// </summary>
         public static ZOROSUnityManager Instance {
-            get { 
+            get {
                 if (_instance == null) {
                     _instance = (ZOROSUnityManager)FindObjectOfType<ZOROSUnityManager>();
                 }
@@ -199,6 +204,8 @@ namespace ZO.ROS.Unity {
 
         }
 
+        private static float lastTimeScale = 1.0f;
+
         // Start is called before the first frame update
         void Start() {
             if (Application.IsPlaying(gameObject) == false) { // In Editor Mode 
@@ -226,17 +233,41 @@ namespace ZO.ROS.Unity {
                     rosBridge.Advertise("/clock", Clock.MessageType);
 
                     // advertise SpawnModel service
-                    // rosBridge.AdvertiseService<SpawnModelServiceRequest>("gazebo/spawn_urdf_model", "gazebo_msgs/SpawnModel", (bridge, msg, id) => {
-                    //     Debug.Log("INFO: got gazebo/spawn_urdf_model");
-                    //     // report back success
-                    //     ROSBridgeConnection.ServiceResponse<ZOSimSpawnServiceResponse>(new ZOSimSpawnServiceResponse() {
-                    //         success = true,
-                    //         status_message = "done!"
-                    //     }, "gazebo/spawn_urdf_model", true, id);
+                    /*
+                    rosBridge.AdvertiseService<SpawnModelServiceRequest>("gazebo/spawn_urdf_model", "gazebo_msgs/SpawnModel", (bridge, msg, id) => {
+                         Debug.Log("INFO: got gazebo/spawn_urdf_model");
+                         // report back success
+                         ROSBridgeConnection.ServiceResponse<ZOSimSpawnServiceResponse>(new ZOSimSpawnServiceResponse() {
+                             success = true,
+                             status_message = "done!"
+                         }, "gazebo/spawn_urdf_model", true, id);
 
-                    //     return Task.CompletedTask;
-                    // });
-                    // rosBridge.AdvertiseService<ZOSimSpawnServiceRequest>(_namespace + "/spawn_zosim_model", "zero_sim_ros/ZOSimSpawn", SpawnModelHandler);
+                         return Task.CompletedTask;
+                    });
+                    rosBridge.AdvertiseService<ZOSimSpawnServiceRequest>(_namespace + "/spawn_zosim_model", "zero_sim_ros/ZOSimSpawn", SpawnModelHandler);
+                    */
+
+
+
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("pause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                        Debug.Log("INFO: got pause_sim");
+                        pause_queue.Enqueue(true);
+                        // report back success
+                        ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
+                        }, "pause_sim", true, id);
+
+                        return Task.CompletedTask;
+                    });
+
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("unpause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                        Debug.Log("INFO: got unpause_sim");
+                        pause_queue.Enqueue(false);
+                        // report back success
+                        ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
+                        }, "unpause_sim", true, id);
+
+                        return Task.CompletedTask;
+                    });
 
                     try {
                         // inform listeners we have connected
@@ -276,7 +307,7 @@ namespace ZO.ROS.Unity {
             // ROSBridgeConnection.UnAdvertiseService(_namespace + "/spawn_zosim_model");
             ROSBridgeConnection.Stop();
         }
-        
+
         private static long MIN_TF_TIME_IN_MS = 2; //equals 500 hz
         private static long last_tf_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
@@ -286,21 +317,33 @@ namespace ZO.ROS.Unity {
         // Update is called once per frame
         void Update() {
             // publish map transform
-            if (ROSBridgeConnection.IsConnected){
+            if (ROSBridgeConnection.IsConnected) {
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
-                if (_transformBroadcast.transforms.Length > 0){
-                    if(time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS){
+                if (_transformBroadcast.transforms.Length > 0) {
+                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS) {
                         last_tf_timestamp = time_now;
                         ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
                     }
                     _transformsToBroadcast.Clear();
                 }
 
+                //check if paused
+                if (pause_queue.Count > 0) {
+                    bool to_pause_flag;
+                    if (pause_queue.TryDequeue(out to_pause_flag)) {
+                        if (to_pause_flag) {
+                            Time.timeScale = 0.0f;
+                        } else {
+                            Time.timeScale = 50.0f;
+                        }
+                    }
+                }
+
                 // simulation clock
                 Clock.Update();
-                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS){
+                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS) {
                     last_clock_timestamp = time_now;
                     ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
                 }
