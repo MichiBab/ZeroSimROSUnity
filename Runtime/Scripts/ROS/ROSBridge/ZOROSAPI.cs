@@ -51,7 +51,7 @@ namespace ZO.ROS {
         public static void SetParam(string paramName, string paramValue, string id) {
             string serializedParamValue = JsonConvert.SerializeObject(paramValue);
             SetParamServiceRequest setParamServiceRequest = new SetParamServiceRequest(paramName, serializedParamValue);
-            ZOROSBridgeConnection.Instance.CallService<SetParamServiceRequest, EmptyServiceRespone>(setParamServiceRequest, "/rosapi/set_param", id, (bridge, responseMsg) => {
+            ZOROSBridgeConnection.Instance.CallService<SetParamServiceRequest, EmptyServiceResponse>(setParamServiceRequest, "/rosapi/set_param", id, (bridge, responseMsg) => {
                 return Task.CompletedTask;
             });
         }
