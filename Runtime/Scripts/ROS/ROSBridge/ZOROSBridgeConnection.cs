@@ -825,7 +825,7 @@ namespace ZO.ROS {
                                 MessageHandler serviceResponseHandler = _serviceCallResponseHandlers.Dequeue();
 
                                 // get the message.  the message defaults to "empty" of no "values" key.
-                                ZOROSMessageInterface message = new EmptyServiceRespone();
+                                ZOROSMessageInterface message = new EmptyServiceResponse();
                                 if (msgJSON.ContainsKey("values") == true) {
                                     message = serviceResponseHandler.DeserializeJSON(msgJSON["values"].ToString());
                                 }
