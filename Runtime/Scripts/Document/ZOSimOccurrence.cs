@@ -49,7 +49,7 @@ namespace ZO.Document {
                     }
                 }
 
-                Debug.LogWarning("WARNING: a ZOSimOccurrence needs a ZOSimDocumentRoot at the root of the hierarchy.");
+                //Debug.LogWarning("WARNING: a ZOSimOccurrence needs a ZOSimDocumentRoot at the root of the hierarchy.");
 
                 return _documentRoot;
             }
