@@ -49,7 +49,7 @@ namespace ZO.ROS.Unity.Service {
                     Debug.LogError("ERROR: reseting simulation: " + e.ToString());
 
                     // report back error
-                    ROSBridgeConnection.ServiceResponse<EmptyServiceRespone>(new EmptyServiceRespone(), ROSTopic, false, service_request_id);
+                    ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse(), ROSTopic, false, service_request_id);
 
                 }
 
