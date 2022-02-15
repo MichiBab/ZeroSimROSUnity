@@ -8,22 +8,21 @@ using UnityEngine;
 using Newtonsoft.Json.Linq;
 using ZO.ROS.MessageTypes.TF2;
 using ZO.ROS.MessageTypes.Geometry;
+using System.IO;
+using System.Threading;
 using ZO.ROS.MessageTypes.ROSGraph;
 using ZO.ROS.MessageTypes.Std;
 using ZO.ROS.MessageTypes.ZOSim;
 using ZO.ROS.Publisher;
 using ZO.Util;
 using System.Collections.Concurrent;
-
 namespace ZO.ROS.Unity {
-
     /// <summary>
     /// Manage ROS with Unity specific functionality.
     /// </summary>
     [ExecuteAlways]
     public class ZOROSUnityManager : MonoBehaviour {
 
-        private static ConcurrentQueue<bool> pause_queue = new ConcurrentQueue<bool>();
 
         /// <summary>
         /// The default ROS namespace for this simulation.
@@ -54,6 +53,7 @@ namespace ZO.ROS.Unity {
         /// TCP Port for the ROS bridge. Do not change unless the default ROS Bridge port has been changed.
         /// </summary>
         public int Port = 9090;
+        public string RobotName = "LoomoModel";
 
         /// <summary>
         /// JSON or BSON serialization.  Recommended to stick with BSON as it is the most efficient.
@@ -237,6 +237,11 @@ namespace ZO.ROS.Unity {
                     Port = Int32.Parse(port_string);
                 }
 
+                string robot_name = GetArg("--RobotName");
+                if (robot_name != null) {
+                    RobotName = robot_name;
+                }
+
                 ROSBridgeConnection.Serialization = _serializationType;
                 ROSBridgeConnection.ROSBridgeConnectEvent += delegate (ZOROSBridgeConnection rosBridge) {
                     Debug.Log("INFO: Connected to ROS Bridge");
@@ -264,25 +269,36 @@ namespace ZO.ROS.Unity {
 
 
 
-                    rosBridge.AdvertiseService<EmptyServiceRequest>("pause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/pause_sim", "std_srvs/Empty", (bridge, msg, id) => {
                         Debug.Log("INFO: got pause_sim");
-                        pause_queue.Enqueue(true);
+                        AddToPauseQueueAndWait(true);
                         // report back success
                         ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
-                        }, "pause_sim", true, id);
+                        }, "/unitysim/pause_sim", true, id);
 
                         return Task.CompletedTask;
                     });
 
-                    rosBridge.AdvertiseService<EmptyServiceRequest>("unpause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/unpause_sim", "std_srvs/Empty", (bridge, msg, id) => {
                         Debug.Log("INFO: got unpause_sim");
-                        pause_queue.Enqueue(false);
+                        AddToPauseQueueAndWait(false);
                         // report back success
                         ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
-                        }, "unpause_sim", true, id);
+                        }, "/unitysim/unpause_sim", true, id);
 
                         return Task.CompletedTask;
                     });
+
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/change_postiion_and_orientation", "std_srvs/Empty", (bridge, msg, id) => {
+                        Debug.Log("INFO: got change_loomo_rotation");
+
+                        // report back success
+                        ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
+                        }, "/unitysim/change_postiion_and_orientation", true, id);
+
+                        return Task.CompletedTask;
+                    });
+
 
                     try {
                         // inform listeners we have connected
@@ -329,26 +345,14 @@ namespace ZO.ROS.Unity {
         private static long MIN_CLOCK_TIME_IN_MS = 10; //equals 100 hz
         private static long last_clock_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
-
-        private static bool paused_state = false;
         // Update is called once per frame
         void Update() {
             // publish map transform
             if (ROSBridgeConnection.IsConnected) {
                 //check if paused
-                if (pause_queue.Count > 0) {
-                    bool to_pause_flag;
-                    if (pause_queue.TryDequeue(out to_pause_flag)) {
-                        if (to_pause_flag) {
-                            Time.timeScale = 0.0f;
-                            paused_state = true;
-                            return;
-                        } else {
-                            Time.timeScale = 50.0f;
-                            paused_state = false;
-                        }
-                    }
-                }
+                paused_state = WorkOnPauseQueue();
+                //check teleport
+                WorkOnTeleportQueue();
 
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
@@ -368,11 +372,72 @@ namespace ZO.ROS.Unity {
                     last_clock_timestamp = time_now;
                     ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
                 }
+
+
             }
 
         }
 
 
-    }
+        static readonly object pause_locker = new object();
+        static readonly object tp_locker = new object();
 
+        private static Queue<bool> pause_queue = new Queue<bool>();
+        private static Queue<Tuple<Vector3, Vector3>> teleport_queue = new Queue<Tuple<Vector3, Vector3>>();
+
+        private static bool paused_state = false;
+
+        public static bool WorkOnPauseQueue() {
+            lock (pause_locker) {
+                if (pause_queue.Count > 0) {
+                    bool to_pause_flag = pause_queue.Dequeue();
+                    if (to_pause_flag) {
+                        Time.timeScale = 0.0f;
+                        paused_state = true;
+                        Monitor.PulseAll(pause_locker);
+                        return true;
+                    } else {
+                        Time.timeScale = 50.0f;
+                        paused_state = false;
+                    }
+                }
+                Monitor.PulseAll(pause_locker);
+                return false;
+            }
+        }
+
+        public static void WorkOnTeleportQueue() {
+            lock (tp_locker) {
+                if (pause_queue.Count > 0) {
+                    Tuple<Vector3, Vector3> values;
+                    values = teleport_queue.Dequeue();
+                    //set rotation and position
+                    //GameObject robot = GameObject.Find(RobotName);
+                    //robot.transform.position = values.Item1;
+                    //robot.transform.Rotate(values.Item2);
+                }
+                Monitor.PulseAll(tp_locker);
+                return;
+            }
+        }
+        public static void AddToPauseQueueAndWait(bool value) {
+            lock (pause_locker) {
+                pause_queue.Enqueue(value);
+                while (pause_queue.Count > 0) {
+                    Monitor.Wait(pause_locker);
+                }
+            }
+        }
+
+        public static void AddToTeleportQueueAndWait(Vector3 position, Vector3 orientation) {
+            lock (tp_locker) {
+                teleport_queue.Enqueue(new Tuple<Vector3, Vector3>(position, orientation));
+                while (teleport_queue.Count > 0) {
+                    Monitor.Wait(tp_locker);
+                }
+            }
+        }
+
+
+    }
 }
