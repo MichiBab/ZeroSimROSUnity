@@ -206,6 +206,16 @@ namespace ZO.ROS.Unity {
 
         private static float lastTimeScale = 1.0f;
 
+        private static string GetArg(string name) {
+            var args = System.Environment.GetCommandLineArgs();
+            for (int i = 0; i < args.Length; i++) {
+                if (args[i] == name && args.Length > i + 1) {
+                    return args[i + 1];
+                }
+            }
+            return null;
+        }
+
         // Start is called before the first frame update
         void Start() {
             if (Application.IsPlaying(gameObject) == false) { // In Editor Mode 
@@ -221,6 +231,11 @@ namespace ZO.ROS.Unity {
                 // }
             } else { // in play mode
 
+                //Change port from env variable.
+                string port_string = GetArg("--port");
+                if (port_string != null) {
+                    Port = Int32.Parse(port_string);
+                }
 
                 ROSBridgeConnection.Serialization = _serializationType;
                 ROSBridgeConnection.ROSBridgeConnectEvent += delegate (ZOROSBridgeConnection rosBridge) {
