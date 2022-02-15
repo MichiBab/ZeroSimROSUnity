@@ -29,6 +29,12 @@ namespace ZO.ROS.Unity {
         /// </summary>
         public string _namespace = "/zerosim";
 
+        private static Vector3 start_position;
+        private static Quaternion start_orientation;
+        private static GameObject robot;
+
+        private static System.Random rnd = new System.Random();
+
         public string Namespace {
             get => _namespace;
         }
@@ -216,6 +222,73 @@ namespace ZO.ROS.Unity {
             return null;
         }
 
+        void ParseArguments() {
+            //Change port from env variable.
+            string port_string = GetArg("--port");
+            if (port_string != null) {
+                Port = Int32.Parse(port_string);
+            }
+
+            string robot_name = GetArg("--RobotName");
+            if (robot_name != null) {
+                RobotName = robot_name;
+            }
+
+            GameObject model = GameObject.Find(RobotName);
+            if (model == null) {
+                Debug.LogError("ROBOT " + RobotName + " WAS NOT FOUND! QUITTING APPLICATION!");
+                Application.Quit();
+            }
+            robot = model.transform.GetChild(0).gameObject;
+
+            Vector3 position = robot.transform.position;
+            float xval = position.x;
+            float yval = position.y;
+            float zval = position.z;
+            Vector3 angles = robot.transform.rotation.eulerAngles;
+            float euler_x = angles.x;
+            float euler_y = angles.y;
+            float euler_z = angles.z;
+
+            string start_x = GetArg("--start_x");
+            if (start_x != null) {
+                xval = float.Parse(start_x);
+            }
+
+            string start_y = GetArg("--start_y");
+            if (start_y != null) {
+                yval = float.Parse(start_y);
+            }
+
+            string start_z = GetArg("--start_z");
+            if (start_z != null) {
+                zval = float.Parse(start_z);
+            }
+
+            string rot_x = GetArg("--rot_x");
+            if (rot_x != null) {
+                euler_x = float.Parse(rot_x);
+            }
+
+            string rot_y = GetArg("--rot_y");
+            if (rot_y != null) {
+                euler_y = float.Parse(rot_y);
+            }
+
+            string rot_z = GetArg("--rot_z");
+            if (rot_z != null) {
+                euler_z = float.Parse(rot_z);
+            }
+
+            //set robots initial position
+            robot.transform.position = new Vector3(xval, yval, zval);
+            robot.transform.rotation = Quaternion.Euler(euler_x, euler_y, euler_z);
+
+            // copy for resetting on service calls
+            start_position = new Vector3(robot.transform.position.x, robot.transform.position.y, robot.transform.position.z);
+            start_orientation = new Quaternion(robot.transform.rotation.x, robot.transform.rotation.y, robot.transform.rotation.z, robot.transform.rotation.w);
+        }
+
         // Start is called before the first frame update
         void Start() {
             if (Application.IsPlaying(gameObject) == false) { // In Editor Mode 
@@ -231,16 +304,8 @@ namespace ZO.ROS.Unity {
                 // }
             } else { // in play mode
 
-                //Change port from env variable.
-                string port_string = GetArg("--port");
-                if (port_string != null) {
-                    Port = Int32.Parse(port_string);
-                }
 
-                string robot_name = GetArg("--RobotName");
-                if (robot_name != null) {
-                    RobotName = robot_name;
-                }
+                ParseArguments();
 
                 ROSBridgeConnection.Serialization = _serializationType;
                 ROSBridgeConnection.ROSBridgeConnectEvent += delegate (ZOROSBridgeConnection rosBridge) {
@@ -269,32 +334,43 @@ namespace ZO.ROS.Unity {
 
 
 
-                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/pause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unity/sim/pause_sim", "std_srvs/Empty", (bridge, msg, id) => {
                         Debug.Log("INFO: got pause_sim");
                         AddToPauseQueueAndWait(true);
                         // report back success
                         ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
-                        }, "/unitysim/pause_sim", true, id);
+                        }, "/unity/sim/pause_sim", true, id);
 
                         return Task.CompletedTask;
                     });
 
-                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/unpause_sim", "std_srvs/Empty", (bridge, msg, id) => {
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unity/sim/unpause_sim", "std_srvs/Empty", (bridge, msg, id) => {
                         Debug.Log("INFO: got unpause_sim");
                         AddToPauseQueueAndWait(false);
                         // report back success
                         ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
-                        }, "/unitysim/unpause_sim", true, id);
+                        }, "/unity/sim/unpause_sim", true, id);
 
                         return Task.CompletedTask;
                     });
 
-                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unitysim/change_postiion_and_orientation", "std_srvs/Empty", (bridge, msg, id) => {
-                        Debug.Log("INFO: got change_loomo_rotation");
-
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unity/sim/reset_position", "std_srvs/Empty", (bridge, msg, id) => {
+                        Debug.Log("INFO: got reset_position");
+                        AddToTeleportQueueAndWait(new Tuple<Vector3, Quaternion>(start_position, start_orientation));
                         // report back success
                         ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
-                        }, "/unitysim/change_postiion_and_orientation", true, id);
+                        }, "/unity/sim/reset_position", true, id);
+
+                        return Task.CompletedTask;
+                    });
+
+                    rosBridge.AdvertiseService<EmptyServiceRequest>("/unity/sim/reset_position_random_orientation", "std_srvs/Empty", (bridge, msg, id) => {
+                        Debug.Log("INFO: got reset_position_random_orientation");
+                        Quaternion rotated = start_orientation * Quaternion.Euler(0, rnd.Next(0, 360), 0);
+                        AddToTeleportQueueAndWait(new Tuple<Vector3, Quaternion>(start_position, rotated));
+                        // report back success
+                        ROSBridgeConnection.ServiceResponse<EmptyServiceResponse>(new EmptyServiceResponse() {
+                        }, "/unity/sim/reset_position_random_orientation", true, id);
 
                         return Task.CompletedTask;
                     });
@@ -383,7 +459,7 @@ namespace ZO.ROS.Unity {
         static readonly object tp_locker = new object();
 
         private static Queue<bool> pause_queue = new Queue<bool>();
-        private static Queue<Tuple<Vector3, Vector3>> teleport_queue = new Queue<Tuple<Vector3, Vector3>>();
+        private static Queue<Tuple<Vector3, Quaternion>> teleport_queue = new Queue<Tuple<Vector3, Quaternion>>();
 
         private static bool paused_state = false;
 
@@ -394,29 +470,25 @@ namespace ZO.ROS.Unity {
                     if (to_pause_flag) {
                         Time.timeScale = 0.0f;
                         paused_state = true;
-                        Monitor.PulseAll(pause_locker);
-                        return true;
                     } else {
                         Time.timeScale = 50.0f;
                         paused_state = false;
                     }
+                    Monitor.PulseAll(pause_locker);
+                    return to_pause_flag;
                 }
-                Monitor.PulseAll(pause_locker);
                 return false;
             }
         }
 
         public static void WorkOnTeleportQueue() {
             lock (tp_locker) {
-                if (pause_queue.Count > 0) {
-                    Tuple<Vector3, Vector3> values;
-                    values = teleport_queue.Dequeue();
-                    //set rotation and position
-                    //GameObject robot = GameObject.Find(RobotName);
-                    //robot.transform.position = values.Item1;
-                    //robot.transform.Rotate(values.Item2);
+                if (teleport_queue.Count > 0) {
+                    Tuple<Vector3, Quaternion> transforms = teleport_queue.Dequeue();
+                    robot.transform.position = transforms.Item1;
+                    robot.transform.rotation = transforms.Item2;
+                    Monitor.PulseAll(tp_locker);
                 }
-                Monitor.PulseAll(tp_locker);
                 return;
             }
         }
@@ -429,9 +501,9 @@ namespace ZO.ROS.Unity {
             }
         }
 
-        public static void AddToTeleportQueueAndWait(Vector3 position, Vector3 orientation) {
+        public static void AddToTeleportQueueAndWait(Tuple<Vector3, Quaternion> transforms) {
             lock (tp_locker) {
-                teleport_queue.Enqueue(new Tuple<Vector3, Vector3>(position, orientation));
+                teleport_queue.Enqueue(transforms);
                 while (teleport_queue.Count > 0) {
                     Monitor.Wait(tp_locker);
                 }
