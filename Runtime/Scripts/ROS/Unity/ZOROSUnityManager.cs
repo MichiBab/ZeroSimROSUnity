@@ -33,6 +33,8 @@ namespace ZO.ROS.Unity {
         private static Quaternion start_orientation;
         private static GameObject robot;
 
+        private static float default_timescale;
+
         private static System.Random rnd = new System.Random();
 
         public string Namespace {
@@ -280,6 +282,13 @@ namespace ZO.ROS.Unity {
                 euler_z = float.Parse(rot_z);
             }
 
+            string time_scale = GetArg("--time_scale");
+            if (time_scale != null) {
+                default_timescale = float.Parse(time_scale);
+            }else{
+                default_timescale = 1.0f;
+            }
+
             //set robots initial position
             robot.transform.position = new Vector3(xval, yval, zval);
             robot.transform.rotation = Quaternion.Euler(euler_x, euler_y, euler_z);
@@ -287,6 +296,8 @@ namespace ZO.ROS.Unity {
             // copy for resetting on service calls
             start_position = new Vector3(robot.transform.position.x, robot.transform.position.y, robot.transform.position.z);
             start_orientation = new Quaternion(robot.transform.rotation.x, robot.transform.rotation.y, robot.transform.rotation.z, robot.transform.rotation.w);
+        
+            Time.timeScale = default_timescale;
         }
 
         // Start is called before the first frame update
@@ -471,7 +482,7 @@ namespace ZO.ROS.Unity {
                         Time.timeScale = 0.0f;
                         paused_state = true;
                     } else {
-                        Time.timeScale = 50.0f;
+                        Time.timeScale = default_timescale;
                         paused_state = false;
                     }
                     Monitor.PulseAll(pause_locker);
