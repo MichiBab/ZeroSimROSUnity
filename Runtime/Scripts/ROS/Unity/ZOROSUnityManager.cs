@@ -229,7 +229,7 @@ namespace ZO.ROS.Unity {
                 Port = Int32.Parse(port_string);
             }
 
-            string robot_name = GetArg("--RobotName");
+            string robot_name = GetArg("--robot_name");
             if (robot_name != null) {
                 RobotName = robot_name;
             }
