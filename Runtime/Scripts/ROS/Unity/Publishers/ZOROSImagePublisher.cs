@@ -5,6 +5,8 @@ using ZO.ROS.MessageTypes.Sensor;
 using ZO.Sensors;
 using ZO.ROS.Unity;
 using ZO.Document;
+using System.IO;
+ 
 
 namespace ZO.ROS.Publisher {
 
@@ -22,7 +24,7 @@ namespace ZO.ROS.Publisher {
         /// The ROS Image message topic to publish to.
         /// See: http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/Image.html
         /// </summary>
-        public string _imageROSTopic = "image/image_raw";
+        public string _imageROSTopic = "image/image_raw/compressed";
 
         /// <summary>
         /// The CameraInfo message topic to publish to.
@@ -40,7 +42,7 @@ namespace ZO.ROS.Publisher {
             set => _rgbCameraSensor = value;
         }
 
-        private ImageMessage _rosImageMessage = new ImageMessage();
+        private CompressedImageMessage _rosImageMessage = new CompressedImageMessage();
         private CameraInfoMessage _rosCameraInfoMessage = new CameraInfoMessage();
 
         /// <summary>
@@ -71,11 +73,17 @@ namespace ZO.ROS.Publisher {
             }
         }
         protected override void ZOOnDestroy() {
-            ROSBridgeConnection?.UnAdvertise(ROSTopic);
+            ROSBridgeConnection?.UnAdvertise(CameraInfoROSTopic);
+            ROSBridgeConnection?.UnAdvertise(ImageROSTopic);
+            _rgbCameraSensor.OnPublishRGBImageDelegate = null;
         }
 
         protected override void ZOOnValidate() {
             base.ZOOnValidate();
+            if (UpdateRateHz == 0)
+            {
+                UpdateRateHz = 30;
+            }
             if (RGBCameraSensor == null) {
                 RGBCameraSensor = GetComponent<ZORGBCamera>();
             }
@@ -110,6 +118,27 @@ namespace ZO.ROS.Publisher {
         }
 
 
+        Color[] ConvertBytesToColors(byte[] bytes, int width, int height)
+            {
+                Color[] colors = new Color[width * height];
+                int colorIndex = 0;
+                for (int y = height - 1; y >= 0; y--)
+                {
+                    for (int x = 0; x < width * 3; x += 3)
+                    {
+                        float r = bytes[y * width * 3 + x] / 255f;
+                        float g = bytes[y * width * 3 + x + 1] / 255f;
+                        float b = bytes[y * width * 3 + x + 2] / 255f;
+                        colors[colorIndex] = new Color(r, g, b);
+                        colorIndex++;
+                    }
+                }
+                return colors;
+
+            }
+
+
+
         /// <summary>
         /// Publishes raw camera RBG8 data as a ROS Image message.
         /// See: http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/Image.html
@@ -134,13 +163,20 @@ namespace ZO.ROS.Publisher {
 
             // setup and send Image message
             _rosImageMessage.header.Update();
-            _rosImageMessage.height = (uint)height;
-            _rosImageMessage.width = (uint)width;
-            _rosImageMessage.encoding = "rgb8";
-            _rosImageMessage.is_bigendian = 0;
-            _rosImageMessage.step = 1 * 3 * (uint)width;
-            _rosImageMessage.data = rgbData;
-            ROSBridgeConnection.Publish<ImageMessage>(_rosImageMessage, _imageROSTopic, Name);
+            // Compress the image data using JPEG compression
+            Texture2D texture = new Texture2D(width, height);
+            texture.SetPixels(ConvertBytesToColors(rgbData, width, height));
+            texture.Apply();
+            // Encode the Texture2D to JPEG format
+            byte[] bytes = texture.EncodeToJPG(85);
+
+            //Free the texture
+            Destroy(texture);
+
+            _rosImageMessage.data = bytes;
+            _rosImageMessage.format = "jpeg";
+            ROSBridgeConnection.Publish<CompressedImageMessage>(_rosImageMessage, _imageROSTopic, Name);
+
 
             // setup and send CameraInfo message            
             _rosCameraInfoMessage.Update();
@@ -153,56 +189,6 @@ namespace ZO.ROS.Publisher {
             } else {
                 _rosCameraInfoMessage.BuildCameraInfo((uint)RGBCameraSensor.Width, (uint)RGBCameraSensor.Height, (double)RGBCameraSensor.FieldOfViewDegrees);
             }
-
-            ROSBridgeConnection.Publish<CameraInfoMessage>(_rosCameraInfoMessage, _cameraInfoROSTopic, cameraId);
-
-            return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Publishes raw camera U8 data as a ROS Image message.
-        /// See: http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/Image.html
-        /// </summary>
-        /// <param name="rgbCamera">The camera component</param>
-        /// <param name="cameraId">Camera ID</param>
-        /// <param name="width">Frame width</param>
-        /// <param name="height">Frame height</param>
-        /// <param name="rgbData">Raw RBG8 data. Note: we only sample the first channel assuming all channels have same monochrome value. </param>
-        /// <returns></returns>
-        private Task OnPublishMonoImageDelegate(ZORGBCamera rgbCamera, string cameraId, int width, int height, byte[] rgbData) {
-
-            // figure out the transforms
-            ZOROSTransformPublisher transformPublisher = GetComponent<ZOROSTransformPublisher>();
-            if (transformPublisher != null) {
-                _rosImageMessage.header.frame_id = transformPublisher.ChildFrameID;
-                _rosCameraInfoMessage.header.frame_id = transformPublisher.ChildFrameID;
-            } else {
-                _rosImageMessage.header.frame_id = Name;
-                _rosCameraInfoMessage.header.frame_id = Name;
-            }
-
-            // setup and send Image message
-            _rosImageMessage.header.Update();
-            _rosImageMessage.height = (uint)height;
-            _rosImageMessage.width = (uint)width;
-            _rosImageMessage.encoding = "mono8";
-            _rosImageMessage.is_bigendian = 0;
-            _rosImageMessage.step = 1 * (uint)width;
-            _rosImageMessage.data = rgbData;
-            ROSBridgeConnection.Publish<ImageMessage>(_rosImageMessage, _imageROSTopic, Name);
-
-            // setup and send CameraInfo message            
-            _rosCameraInfoMessage.Update();
-            _rosCameraInfoMessage.header = _rosImageMessage.header;
-            // initialize the camera info
-            if (RGBCameraSensor.UnityCamera.usePhysicalProperties == true) {
-                _rosCameraInfoMessage.BuildCameraInfo((uint)RGBCameraSensor.Width, (uint)RGBCameraSensor.Height,
-                                                (double)RGBCameraSensor.FocalLengthMM,
-                                                (double)RGBCameraSensor.SensorSizeMM.x, (double)RGBCameraSensor.SensorSizeMM.y);
-            } else {
-                _rosCameraInfoMessage.BuildCameraInfo((uint)RGBCameraSensor.Width, (uint)RGBCameraSensor.Height, (double)RGBCameraSensor.FieldOfViewDegrees);
-            }
-
             ROSBridgeConnection.Publish<CameraInfoMessage>(_rosCameraInfoMessage, _cameraInfoROSTopic, cameraId);
 
             return Task.CompletedTask;

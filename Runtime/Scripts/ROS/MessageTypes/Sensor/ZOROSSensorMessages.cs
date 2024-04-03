@@ -71,6 +71,37 @@ namespace ZO.ROS.MessageTypes.Sensor {
         }
     }
 
+    public class CompressedImageMessage : ZOROSMessageInterface {
+
+
+        [Newtonsoft.Json.JsonIgnore]
+        public string MessageType { get { return CompressedImageMessage.Type; } }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public static string Type = "sensor_msgs/CompressedImage";
+
+
+        public HeaderMessage header { get; set; }
+        public string format { get; set; }
+        public byte[] data { get; set; }
+
+        public CompressedImageMessage() {
+            this.header = new HeaderMessage();
+            this.format = "";
+            this.data = new byte[0];
+        }
+
+        public CompressedImageMessage(HeaderMessage header, string format, byte[] data) {
+            this.header = header;
+            this.format = format;
+            this.data = data;
+        }
+
+        public void Update() {
+            this.header.Update();
+        }
+    }
+
 
     /// <summary>
     /// Single scan from a planar laser range-finder

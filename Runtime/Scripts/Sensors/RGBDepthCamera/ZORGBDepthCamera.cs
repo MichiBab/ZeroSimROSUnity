@@ -130,7 +130,7 @@ namespace ZO.Sensors {
         private NativeArray<byte> _rgbValues;
 
         // publish queue
-        private Queue<Task> _publishTasks = new Queue<Task>();
+        Task _publishTask = null;
 
 
 
@@ -214,10 +214,6 @@ namespace ZO.Sensors {
         }
 
         protected override void ZOUpdate() {
-            // clean up the publishing tasks
-            while (_publishTasks.Count > 0 && _publishTasks.Peek().IsCompleted) {
-                _publishTasks.Dequeue();
-            }
             DoRenderTextureUpdate();
         }
 
@@ -265,28 +261,23 @@ namespace ZO.Sensors {
                     // Get data from the request when it's done
                     float[] rawTextureData = asyncGPURequest.GetRawData_ArrayFloat();
                     if (OnPublishDelegate != null) {
-                        if (_publishTasks.Count < _maxPublishTaskQueue) {
+                        if (_publishTask == null || _publishTask.IsCompleted) {
+                            float r, g, b, d;
+                            for (int z = 0, c = 0, p = 0; z < (_width * _height); z++, c += 3, p += 4) {
+                                r = rawTextureData[p];
+                                g = rawTextureData[p + 1];
+                                b = rawTextureData[p + 2];
+                                d = rawTextureData[p + 3];
 
-                            Task publishTask = Task.Run(() => {
-                                float r, g, b, d;
-                                for (int z = 0, c = 0, p = 0; z < (_width * _height); z++, c += 3, p += 4) {
-                                    r = rawTextureData[p];
-                                    g = rawTextureData[p + 1];
-                                    b = rawTextureData[p + 2];
-                                    d = rawTextureData[p + 3];
+                                _colorPixels24[c + 0] = (byte)(r * 255.0f);
+                                _colorPixels24[c + 1] = (byte)(g * 255.0f);
+                                _colorPixels24[c + 2] = (byte)(b * 255.0f);
+                                _depthBufferFloat[z] = d * _depthScale;
 
-                                    _colorPixels24[c + 0] = (byte)(r * 255.0f);
-                                    _colorPixels24[c + 1] = (byte)(g * 255.0f);
-                                    _colorPixels24[c + 2] = (byte)(b * 255.0f);
-                                    _depthBufferFloat[z] = d * _depthScale;
+                                _averageDepth = d;
 
-                                    _averageDepth = d;
-
-                                }
-                                OnPublishDelegate(this, Name, _width, _height, _colorPixels24, _depthBufferFloat);
-                            });
-
-                            _publishTasks.Enqueue(publishTask);
+                            }
+                            OnPublishDelegate(this, Name, _width, _height, _colorPixels24, _depthBufferFloat);
 
                         } else {
                             Debug.Log("INFO: ZORGBDepthCamera publish task overflow...");

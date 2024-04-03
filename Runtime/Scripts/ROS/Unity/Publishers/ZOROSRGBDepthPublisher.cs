@@ -46,7 +46,7 @@ namespace ZO.ROS.Publisher {
             get => _rgbDepthCameraSensor;
             set => _rgbDepthCameraSensor = value;
         }
-        private ImageMessage _colorImageMessage = new ImageMessage();
+        private CompressedImageMessage _colorImageMessage = new CompressedImageMessage();
         private ImageMessage _depthImageMessage = new ImageMessage();
         private CameraInfoMessage _cameraInfoMessage = new CameraInfoMessage();
         private CameraInfoMessage _depthInfoMessage = new CameraInfoMessage();
@@ -131,7 +131,7 @@ namespace ZO.ROS.Publisher {
             ROSBridgeConnection.Advertise(_rgbImageROSTopic, _colorImageMessage.MessageType);
             ROSBridgeConnection.Advertise(_depthROSTopic, _depthImageMessage.MessageType);
             ROSBridgeConnection.Advertise(_cameraInfoROSTopic, _cameraInfoMessage.MessageType);
-            ROSBridgeConnection.Advertise(_depthCameraInfoROSTopic, _depthInfoMessage.MessageType);
+            ROSBridgeConnection.Advertise(_depthCameraInfoROSTopic, _depthInfoMessage.MessageType); 
 
 
             // setup the transforms
@@ -168,18 +168,42 @@ namespace ZO.ROS.Publisher {
             Terminate();
         }
 
+        Color[] ConvertBytesToColors(byte[] bytes, int width, int height)
+        {
+            Color[] colors = new Color[width * height];
+            int colorIndex = 0;
+            for (int y = height - 1; y >= 0; y--)
+            {
+                for (int x = 0; x < width * 3; x += 3)
+                {
+                    float r = bytes[y * width * 3 + x] / 255f;
+                    float g = bytes[y * width * 3 + x + 1] / 255f;
+                    float b = bytes[y * width * 3 + x + 2] / 255f;
+                    colors[colorIndex] = new Color(r, g, b);
+                    colorIndex++;
+                }
+            }
+            return colors;
+
+        }
+
         private Task OnPublishRGBDepthDelegate(ZORGBDepthCamera rgbdCamera, string cameraId, int width, int height, byte[] rgbData, float[] depthData) {
 
             // publish rgb color image 
             _colorImageMessage.header.Update();
-            _colorImageMessage.height = (uint)height;
-            _colorImageMessage.width = (uint)width;
-            _colorImageMessage.encoding = "rgb8";
-            _colorImageMessage.is_bigendian = 0;
-            _colorImageMessage.step = 1 * 3 * (uint)width;
-            _colorImageMessage.data = (byte[])rgbData.Clone();
-            ROSBridgeConnection.Publish<ImageMessage>(_colorImageMessage, _rgbImageROSTopic, cameraId);
+ 
+            Texture2D texture = new Texture2D(width, height);
+            texture.SetPixels(ConvertBytesToColors(rgbData, width, height));
+            texture.Apply();
+            // Encode the Texture2D to JPEG format
+            byte[] bytes = texture.EncodeToJPG(85);
 
+            // Free the texture
+            Destroy(texture);
+
+            _colorImageMessage.data = bytes;
+            _colorImageMessage.format = "jpeg";
+            ROSBridgeConnection.Publish<CompressedImageMessage>(_colorImageMessage, _rgbImageROSTopic, cameraId);
 
             // publish depth image
             _depthImageMessage.header = _colorImageMessage.header; // color image & depth image header need to match
