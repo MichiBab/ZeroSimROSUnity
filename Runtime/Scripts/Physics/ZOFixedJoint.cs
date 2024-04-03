@@ -18,12 +18,11 @@ namespace ZO.Physics {
     /// The HingeJoint groups together 2 rigid bodies, constraining them to move like connected by a hinge.
     ///
     /// The HingeJoint has a motor which can be used to make the hinge spin around the joints axis. A spring 
-    /// which attempts to reach for a target angle by spinning around the joints axis. And a limit which 
+    /// which attempts to reach for a target angle by spinning around the joints axis. And  a limit which 
     /// constrains the joint angle.
     /// </summary>
     [ExecuteAlways]
-    [RequireComponent(typeof(Rigidbody))]
-    [RequireComponent(typeof(HingeJoint))]
+        [RequireComponent(typeof(Rigidbody))]
     public class ZOFixedJoint : ZOGameObjectBase, ZOJointInterface {
 
         [SerializeField] public UnityEngine.FixedJoint _fixedJoint;
