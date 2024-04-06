@@ -1,7 +1,9 @@
 using System;
-namespace ZO.ROS.MessageTypes.Std {
+namespace ZO.ROS.MessageTypes.Std
+{
 
-    public class TimeMessage : ZOROSMessageInterface {
+    public class TimeMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return TimeMessage.Type; } }
@@ -12,12 +14,14 @@ namespace ZO.ROS.MessageTypes.Std {
         public uint secs { get; set; }
         public uint nsecs { get; set; }
 
-        public TimeMessage() {
+        public TimeMessage()
+        {
             secs = 0;
             nsecs = 0;
         }
 
-        public TimeMessage(uint secs, uint nsecs) {
+        public TimeMessage(uint secs, uint nsecs)
+        {
             this.secs = secs;
             this.nsecs = nsecs;
         }
@@ -27,7 +31,8 @@ namespace ZO.ROS.MessageTypes.Std {
         /// <summary>
         /// Sets the timestamp to Now
         /// </summary>
-        public void Now() {
+        public void Now()
+        {
             DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             // TimeSpan timeSpan = DateTime.Now.ToUniversalTime() - epoch;
             TimeSpan timeSpan = _clock.UtcNow - epoch;
@@ -39,17 +44,20 @@ namespace ZO.ROS.MessageTypes.Std {
         /// <summary>
         /// Sets the timestamp to Now
         /// </summary>
-        public void Update() {
+        public void Update()
+        {
             this.Now();
         }
 
-        public TimeSpan TimeSpan() {
+        public TimeSpan TimeSpan()
+        {
             return System.TimeSpan.FromSeconds(this.secs) + System.TimeSpan.FromMilliseconds(this.nsecs / 1e6);
         }
 
     }
 
-    public class HeaderMessage : ZOROSMessageInterface {
+    public class HeaderMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return HeaderMessage.Type; } }
@@ -73,13 +81,15 @@ namespace ZO.ROS.MessageTypes.Std {
         // Frame this data is associated with
         public string frame_id { get; set; }
 
-        public HeaderMessage() {
+        public HeaderMessage()
+        {
             this.seq = 0;
             this.stamp = new TimeMessage();
             this.frame_id = "";
         }
 
-        public HeaderMessage(uint seq, TimeMessage stamp, string frame_id) {
+        public HeaderMessage(uint seq, TimeMessage stamp, string frame_id)
+        {
             this.seq = seq;
             this.stamp = stamp;
             this.frame_id = frame_id;
@@ -88,7 +98,8 @@ namespace ZO.ROS.MessageTypes.Std {
         /// <summary>
         /// Update the header timestamp and sequence
         /// </summary>
-        public void Update() {
+        public void Update()
+        {
             // increment sequence
             this.seq++;
 
@@ -97,11 +108,93 @@ namespace ZO.ROS.MessageTypes.Std {
         }
     }
 
+    public class MultiArrayDimension : ZOROSMessageInterface
+    {
+
+        [Newtonsoft.Json.JsonIgnore]
+        public string MessageType { get { return MultiArrayDimension.Type; } }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public static string Type = "std_msgs/MultiArrayDimension";
+
+        public string label { get; set; }
+        public uint size { get; set; }
+        public uint stride { get; set; }
+
+        public MultiArrayDimension()
+        {
+            this.label = "";
+            this.size = 0;
+            this.stride = 0;
+        }
+
+        public MultiArrayDimension(string label, uint size, uint stride)
+        {
+            this.label = label;
+            this.size = size;
+            this.stride = stride;
+        }
+    }
+
+
+    public class MultiArrayLayout : ZOROSMessageInterface
+    {
+
+        [Newtonsoft.Json.JsonIgnore]
+        public string MessageType { get { return MultiArrayLayout.Type; } }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public static string Type = "std_msgs/MultiArrayLayout";
+
+        public MultiArrayDimension[] dim { get; set; }
+        public uint data_offset { get; set; }
+
+        public MultiArrayLayout()
+        {
+            this.dim = new MultiArrayDimension[0];
+            this.data_offset = 0;
+        }
+
+        public MultiArrayLayout(MultiArrayDimension[] dim, uint data_offset)
+        {
+            this.dim = dim;
+            this.data_offset = data_offset;
+        }
+    }
+
+    public class Float32MultiArray : ZOROSMessageInterface
+    {
+
+        [Newtonsoft.Json.JsonIgnore]
+        public string MessageType { get { return Float32MultiArray.Type; } }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public static string Type = "std_msgs/Float32MultiArray";
+
+        public MultiArrayLayout layout { get; set; }
+        public float[] data { get; set; }
+
+        public Float32MultiArray()
+        {
+            this.layout = new MultiArrayLayout();
+            this.data = new float[0];
+        }
+
+        public Float32MultiArray(MultiArrayLayout layout, float[] data)
+        {
+            this.layout = layout;
+            this.data = data;
+        }
+    }
+
+
+
 
     /// <summary>
     /// Generic Int32 message
     /// </summary>
-    public class Int32Message : ZOROSMessageInterface {
+    public class Int32Message : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return Int32Message.Type; } }
@@ -112,11 +205,13 @@ namespace ZO.ROS.MessageTypes.Std {
 
         public Int32 data { get; set; }
 
-        public Int32Message() {
+        public Int32Message()
+        {
             data = 0;
         }
 
-        public Int32Message(Int32 data) {
+        public Int32Message(Int32 data)
+        {
             this.data = data;
         }
     }
@@ -124,7 +219,8 @@ namespace ZO.ROS.MessageTypes.Std {
     /// <summary>
     /// Generic string message.
     /// </summary>
-    public class StringMessage : ZOROSMessageInterface {
+    public class StringMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return StringMessage.Type; } }
@@ -134,11 +230,13 @@ namespace ZO.ROS.MessageTypes.Std {
 
         public string data { get; set; }
 
-        public StringMessage() {
+        public StringMessage()
+        {
             this.data = "";
         }
 
-        public StringMessage(string data) {
+        public StringMessage(string data)
+        {
             this.data = data;
         }
     }
@@ -146,7 +244,8 @@ namespace ZO.ROS.MessageTypes.Std {
     /// <summary>
     /// Generic bool setting service request message.
     /// </summary>
-    public class SetBoolServiceRequest : ZOROSMessageInterface {
+    public class SetBoolServiceRequest : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return SetBoolServiceRequest.Type; } }
@@ -157,11 +256,13 @@ namespace ZO.ROS.MessageTypes.Std {
 
         public bool data { get; set; }
 
-        public SetBoolServiceRequest() {
+        public SetBoolServiceRequest()
+        {
             this.data = true;
         }
 
-        public SetBoolServiceRequest(bool data) {
+        public SetBoolServiceRequest(bool data)
+        {
             this.data = data;
         }
     }
@@ -169,7 +270,8 @@ namespace ZO.ROS.MessageTypes.Std {
     /// <summary>
     /// Generic bool setting service response message.
     /// </summary>
-    public class SetBoolServiceResponse : ZOROSMessageInterface {
+    public class SetBoolServiceResponse : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return SetBoolServiceResponse.Type; } }
@@ -181,18 +283,21 @@ namespace ZO.ROS.MessageTypes.Std {
         public bool success { get; set; }
         public string message { get; set; }
 
-        public SetBoolServiceResponse() {
+        public SetBoolServiceResponse()
+        {
             this.success = true;
             this.message = "";
         }
 
-        public SetBoolServiceResponse(bool success, string message) {
+        public SetBoolServiceResponse(bool success, string message)
+        {
             this.success = success;
             this.message = message;
         }
     }
 
-    public class EmptyServiceRequest : ZOROSMessageInterface {
+    public class EmptyServiceRequest : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return EmptyServiceRequest.Type; } }
@@ -203,7 +308,8 @@ namespace ZO.ROS.MessageTypes.Std {
 
     }
 
-    public class EmptyServiceResponse : ZOROSMessageInterface {
+    public class EmptyServiceResponse : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return EmptyServiceResponse.Type; } }
@@ -213,7 +319,8 @@ namespace ZO.ROS.MessageTypes.Std {
 
     }
 
-    public class DurationMessage : ZOROSMessageInterface {
+    public class DurationMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return DurationMessage.Type; } }
@@ -225,12 +332,14 @@ namespace ZO.ROS.MessageTypes.Std {
         public uint secs { get; set; }
         public uint nsecs { get; set; }
 
-        public DurationMessage() {
+        public DurationMessage()
+        {
             secs = 0;
             nsecs = 0;
         }
 
-        public DurationMessage(uint secs, uint nsecs) {
+        public DurationMessage(uint secs, uint nsecs)
+        {
             this.secs = secs;
             this.nsecs = nsecs;
         }
@@ -240,49 +349,64 @@ namespace ZO.ROS.MessageTypes.Std {
         /// Converts to/from seconds
         /// </summary>
         /// <value></value>
-        public double Seconds {
-            get {
-                double sec = (double)this.secs + ((double)this.nsecs)/1000000000.0;
+        public double Seconds
+        {
+            get
+            {
+                double sec = (double)this.secs + ((double)this.nsecs) / 1000000000.0;
                 return sec;
             }
 
-            set {
+            set
+            {
                 this.secs = (uint)System.Math.Truncate(value);
                 this.nsecs = (uint)((value - (double)this.secs) * 1000000000.0);
             }
         }
 
-        public static DurationMessage operator +(DurationMessage lhs, DurationMessage rhs) {
-            return new DurationMessage (lhs.secs + rhs.secs, lhs.nsecs + rhs.nsecs);
+        public static DurationMessage operator +(DurationMessage lhs, DurationMessage rhs)
+        {
+            return new DurationMessage(lhs.secs + rhs.secs, lhs.nsecs + rhs.nsecs);
         }
 
-        public static DurationMessage operator -(DurationMessage lhs, DurationMessage rhs) {
-            return new DurationMessage (lhs.secs - rhs.secs, lhs.nsecs - rhs.nsecs);
+        public static DurationMessage operator -(DurationMessage lhs, DurationMessage rhs)
+        {
+            return new DurationMessage(lhs.secs - rhs.secs, lhs.nsecs - rhs.nsecs);
         }
 
-        public static bool operator <(DurationMessage lhs, DurationMessage rhs) {
-            if (lhs.secs < rhs.secs) {
-                return true;
-            } else if (lhs.secs == rhs.secs && lhs.nsecs < rhs.nsecs) {
-                return true;
-            }
-            return false;            
-        }
-
-        public static bool operator >(DurationMessage lhs, DurationMessage rhs) {
-            if (lhs.secs > rhs.secs) {
-                return true;
-            } else if (lhs.secs == rhs.secs && lhs.nsecs > rhs.nsecs) {
+        public static bool operator <(DurationMessage lhs, DurationMessage rhs)
+        {
+            if (lhs.secs < rhs.secs)
+            {
                 return true;
             }
-            return false;            
+            else if (lhs.secs == rhs.secs && lhs.nsecs < rhs.nsecs)
+            {
+                return true;
+            }
+            return false;
         }
 
-        public static bool operator ==(DurationMessage lhs, DurationMessage rhs) {
+        public static bool operator >(DurationMessage lhs, DurationMessage rhs)
+        {
+            if (lhs.secs > rhs.secs)
+            {
+                return true;
+            }
+            else if (lhs.secs == rhs.secs && lhs.nsecs > rhs.nsecs)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool operator ==(DurationMessage lhs, DurationMessage rhs)
+        {
             return lhs.secs == rhs.secs && lhs.nsecs == rhs.nsecs;
         }
 
-        public static bool operator !=(DurationMessage lhs, DurationMessage rhs) {
+        public static bool operator !=(DurationMessage lhs, DurationMessage rhs)
+        {
             return lhs.secs != rhs.secs || lhs.nsecs != rhs.nsecs;
         }
 
