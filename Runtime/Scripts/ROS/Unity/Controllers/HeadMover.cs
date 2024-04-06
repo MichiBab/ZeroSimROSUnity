@@ -18,7 +18,6 @@ public class HeadMover : ZOROSUnityGameObjectBase
     /* IDEA: When the Hinge joint call to a specific location is given,
     then the use limits will be disabled, the limits that result in the target location will be set, with min or max in the direction. If we want to go down for 1 degree, then we set  
     the min limit to our current minus one and set the current velocity to -50. If we get an up command, we set the max limit to current + the new wanted location and set the target velocity to +50. */
-    public ZOSimOccurrence _connectedBody;
 
     private float min_head_deg = -90.0f;
     private float max_head_deg = 170.0f;
