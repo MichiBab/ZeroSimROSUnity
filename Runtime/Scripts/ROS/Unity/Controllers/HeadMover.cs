@@ -30,8 +30,8 @@ public class HeadMover : ZOROSUnityGameObjectBase
     private float target_yaw_deg = 0.0f;
     private float last_target_yaw_deg = 0.0f;
 
-    private float min_target_vel = -50.0f;
-    private float max_target_vel = 50.0f;
+    private float min_target_vel = -150.0f;
+    private float max_target_vel = 150.0f;
 
 
 
