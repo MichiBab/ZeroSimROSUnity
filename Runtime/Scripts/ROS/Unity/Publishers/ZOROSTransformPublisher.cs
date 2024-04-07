@@ -58,6 +58,7 @@ namespace ZO.ROS.Publisher
             _transformMessage.child_frame_id = rootName + "_" + ChildFrameID;
             _transformMessage.FromLocalUnityTransformToROS(this.transform);
 
+
             ROSUnityManager.BroadcastTransform(_transformMessage);
 
         }

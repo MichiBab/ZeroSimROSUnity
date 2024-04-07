@@ -117,7 +117,9 @@ namespace ZO.ROS.Controllers
             {
                 Name = gameObject.name + "_" + Type;
             }
-
+            _ROSTopicOdom = "/" + gameObject.transform.root.gameObject.name + "/odom";
+            _ROSTopicVlsOdom = "/" + gameObject.transform.root.gameObject.name + "/vls_odom";
+            _ROSTopicSubscription = "/" + gameObject.transform.root.gameObject.name + "/cmd_vel";
         }
 
         protected override void ZOAwake()
@@ -205,7 +207,8 @@ namespace ZO.ROS.Controllers
                 _odometryMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId;
                 _odometryMessage.child_frame_id = rootName + "_" + "odom";
 
-                ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, "/odom");
+                ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, _ROSTopicOdom);
+                ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, _ROSTopicVlsOdom);
             }
 
 
@@ -341,6 +344,8 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
         /// To test: `rosrun turtlebot3 turtlebot3_teleop_key`
         /// </summary>
         public string _ROSTopicSubscription = "/cmd_vel";
+        public string _ROSTopicOdom = "/odom";
+        public string _ROSTopicVlsOdom = "/vls_odom";
         private TwistMessage _twistMessage = new TwistMessage();
         private OdometryMessage _odometryMessage = new OdometryMessage();
 
@@ -358,8 +363,9 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
             ZOROSBridgeConnection.Instance.Subscribe<TwistMessage>(Name, _ROSTopicSubscription, _twistMessage.MessageType, OnROSTwistMessageReceived);
 
             // adverise Odometry Message
-            Debug.Log("Advertising: " + "/odom" + " " + _odometryMessage.MessageType);
-            ZOROSBridgeConnection.Instance.Advertise("/odom", _odometryMessage.MessageType);
+            Debug.Log("Advertising: " + _ROSTopicOdom + " " + _odometryMessage.MessageType);
+            ZOROSBridgeConnection.Instance.Advertise(_ROSTopicOdom, _odometryMessage.MessageType);
+            ZOROSBridgeConnection.Instance.Advertise(_ROSTopicVlsOdom, _odometryMessage.MessageType);
         }
 
         public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)

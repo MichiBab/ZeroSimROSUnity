@@ -68,6 +68,8 @@ namespace ZO.ROS.Publisher
             {
                 UpdateRateHz = 20;
             }
+            ROSTopic = "/" + gameObject.transform.root.gameObject.name + "/odom";
+
 
         }
 

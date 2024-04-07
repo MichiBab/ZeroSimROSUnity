@@ -77,6 +77,7 @@ namespace ZO.ROS.Publisher
             {
                 ROSTopic = "scan";
             }
+            ROSTopic = "/" + gameObject.transform.root.gameObject.name + "/lidar/scan";
 
             if (UpdateRateHz == 0)
             {

@@ -15,7 +15,8 @@ using ZO.ROS.MessageTypes;
 using ZO.ROS.MessageTypes.Std;
 using ZO.ROS.MessageTypes.ROSAPI;
 
-namespace ZO.ROS {
+namespace ZO.ROS
+{
 
     /// <summary>
     /// ROS Bridge Connection manager singleton.  
@@ -77,7 +78,8 @@ namespace ZO.ROS {
     ///     await ZOROSBridgeConnection.Instance.ConnectAsync();
     /// });
     /// </code></example>
-    public class ZOROSBridgeConnection {
+    public class ZOROSBridgeConnection
+    {
 
         #region Singleton
 
@@ -89,7 +91,8 @@ namespace ZO.ROS {
 
         #endregion // Singleton
 
-        public enum SerializationType {
+        public enum SerializationType
+        {
             JSON,
             BSON
         };
@@ -105,11 +108,14 @@ namespace ZO.ROS {
         /// Event that is called when connected to ROS bridge.
         /// </summary>
         /// <value></value>
-        public event ROSBridgeConnectionChangeHandler ROSBridgeConnectEvent {
-            add {
+        public event ROSBridgeConnectionChangeHandler ROSBridgeConnectEvent
+        {
+            add
+            {
                 _connectEvent += value;
             }
-            remove {
+            remove
+            {
                 _connectEvent -= value;
             }
         }
@@ -118,11 +124,14 @@ namespace ZO.ROS {
         /// Event called when disconnected from ROS Bridge
         /// </summary>
         /// <returns></returns>
-        public event ROSBridgeConnectionChangeHandler ROSBridgeDisconnectEvent {
-            add {
+        public event ROSBridgeConnectionChangeHandler ROSBridgeDisconnectEvent
+        {
+            add
+            {
                 _disconnectEvent += value;
             }
-            remove {
+            remove
+            {
                 _disconnectEvent -= value;
             }
         }
@@ -145,7 +154,8 @@ namespace ZO.ROS {
         /// Checks if the ROS Bridge is connected.
         /// </summary>
         /// <value></value>
-        public bool IsConnected {
+        public bool IsConnected
+        {
             get => _isConnected;
         }
 
@@ -156,7 +166,8 @@ namespace ZO.ROS {
         /// <see>
         /// See: https://github.com/biobotus/rosbridge_suite/blob/master/ROSBRIDGE_PROTOCOL.md
         /// <see>        
-        internal class GenericMessagePublish<T> where T : ZOROSMessageInterface {
+        internal class GenericMessagePublish<T> where T : ZOROSMessageInterface
+        {
 
             public string op { get; set; }
             public string id { get; set; }
@@ -164,14 +175,16 @@ namespace ZO.ROS {
             public string topic { get; set; }   // required
             public T msg { get; set; }          // required
 
-            internal GenericMessagePublish(string id, string topic, T msg) {
+            internal GenericMessagePublish(string id, string topic, T msg)
+            {
                 this.id = id;
                 this.op = "publish";
                 this.topic = topic;
                 this.msg = msg;
             }
 
-            internal GenericMessagePublish() {
+            internal GenericMessagePublish()
+            {
 
             }
         }
@@ -180,13 +193,15 @@ namespace ZO.ROS {
         /// Generic wrapper class for ROS bridge service response messages.
         /// </summary>
         /// <typeparam name="T">ZOROSMessageInterface</typeparam>
-        internal class GenericServiceResponse<T> where T : ZOROSMessageInterface {
+        internal class GenericServiceResponse<T> where T : ZOROSMessageInterface
+        {
             public string op { get; set; }
             public string service { get; set; }
             public T values { get; set; }
             public bool result { get; set; }
             public string id { get; set; }
-            internal GenericServiceResponse(string service, bool result, T values, string id) {
+            internal GenericServiceResponse(string service, bool result, T values, string id)
+            {
                 this.op = "service_response";
                 this.service = service;
                 this.values = values;
@@ -194,7 +209,8 @@ namespace ZO.ROS {
                 this.id = id;
             }
 
-            internal GenericServiceResponse() {
+            internal GenericServiceResponse()
+            {
                 this.op = "service_response";
                 this.service = "";
                 this.result = false;
@@ -204,7 +220,8 @@ namespace ZO.ROS {
         }
 
 
-        internal abstract class MessageHandler {
+        internal abstract class MessageHandler
+        {
             [Newtonsoft.Json.JsonIgnore]
             public Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> OnMessageReceivedHandler;
 
@@ -217,7 +234,8 @@ namespace ZO.ROS {
         /// <summary>
         /// NOTE: difference between MessageHandler and this is the extra "string" that returns the "id" in OnServiceCallHandler
         /// </summary>
-        internal abstract class ServiceCallHandler {
+        internal abstract class ServiceCallHandler
+        {
             [Newtonsoft.Json.JsonIgnore]
             public Func<ZOROSBridgeConnection, ZOROSMessageInterface, string, Task> OnServiceCallHandler;
             public abstract ZOROSMessageInterface DeserializeBSON(byte[] data);
@@ -246,7 +264,8 @@ namespace ZO.ROS {
         /// If a client has multiple subscriptions to the same topic, then messages are sent at the lowest throttle_rate, with the lowest fragmentation size, and highest queue_length. It is recommended that the client provides IDs for its subscriptions, to enable rosbridge to effectively choose the appropriate fragmentation size and publishing rate.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        internal class GenericMessageSubscribe<T> : MessageHandler where T : ZOROSMessageInterface {
+        internal class GenericMessageSubscribe<T> : MessageHandler where T : ZOROSMessageInterface
+        {
 
             public string op { get; set; }
             public string id { get; set; }
@@ -258,7 +277,8 @@ namespace ZO.ROS {
             public int fragment_size { get; set; }  // optional
             public string compression { get; set; } // optional
 
-            internal GenericMessageSubscribe(string id, string topic, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> OnReceiveDelegate, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none") {
+            internal GenericMessageSubscribe(string id, string topic, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> OnReceiveDelegate, int throttle_rate = 0, int queue_length = 1, int fragment_size = int.MaxValue, string compression = "none")
+            {
                 this.id = id;
                 this.op = "subscribe";
                 this.topic = topic;
@@ -271,10 +291,12 @@ namespace ZO.ROS {
             }
 
 
-            public override ZOROSMessageInterface DeserializeBSON(byte[] data) {
+            public override ZOROSMessageInterface DeserializeBSON(byte[] data)
+            {
                 GenericMessagePublish<T> receivedPublishMessage = new GenericMessagePublish<T>();
                 MemoryStream memoryStream = new MemoryStream(data);
-                using (BsonDataReader reader = new BsonDataReader(memoryStream)) {
+                using (BsonDataReader reader = new BsonDataReader(memoryStream))
+                {
                     JsonSerializer serializer = new JsonSerializer();
                     receivedPublishMessage = serializer.Deserialize<GenericMessagePublish<T>>(reader);
                 }
@@ -282,20 +304,23 @@ namespace ZO.ROS {
                 return receivedPublishMessage.msg;
             }
 
-            public override ZOROSMessageInterface DeserializeJSON(string json) {
+            public override ZOROSMessageInterface DeserializeJSON(string json)
+            {
                 ZOROSMessageInterface messageObject = JsonConvert.DeserializeObject<T>(json);
                 return messageObject;
             }
 
         }
 
-        internal class GenericServiceAdvertise<T> : ServiceCallHandler where T : ZOROSMessageInterface {
+        internal class GenericServiceAdvertise<T> : ServiceCallHandler where T : ZOROSMessageInterface
+        {
 
             public string op { get; set; }
             public string service { get; set; }
 
             public string type { get; set; }        // optional
-            internal GenericServiceAdvertise(string service, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, string, Task> onServiceCallHandler) {
+            internal GenericServiceAdvertise(string service, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, string, Task> onServiceCallHandler)
+            {
                 this.service = service;
                 this.op = "advertise_service";
                 this.type = type;
@@ -303,11 +328,13 @@ namespace ZO.ROS {
             }
 
 
-            public override ZOROSMessageInterface DeserializeBSON(byte[] data) {
+            public override ZOROSMessageInterface DeserializeBSON(byte[] data)
+            {
                 //BUGBUG: is this BridgeMessagePublish correct?  Shouldn't it be BridgeServiceResponse?
                 GenericMessagePublish<T> receivedPublishMessage = new GenericMessagePublish<T>();
                 MemoryStream memoryStream = new MemoryStream(data);
-                using (BsonDataReader reader = new BsonDataReader(memoryStream)) {
+                using (BsonDataReader reader = new BsonDataReader(memoryStream))
+                {
                     JsonSerializer serializer = new JsonSerializer();
                     receivedPublishMessage = serializer.Deserialize<GenericMessagePublish<T>>(reader);
                 }
@@ -315,7 +342,8 @@ namespace ZO.ROS {
                 return receivedPublishMessage.msg;
             }
 
-            public override ZOROSMessageInterface DeserializeJSON(string json) {
+            public override ZOROSMessageInterface DeserializeJSON(string json)
+            {
                 ZOROSMessageInterface messageObject = JsonConvert.DeserializeObject<T>(json);
                 return messageObject;
             }
@@ -341,12 +369,14 @@ namespace ZO.ROS {
         /// </summary>
         /// <typeparam name="T">The calling message</typeparam>
         /// <typeparam name="R">The response message</typeparam>
-        internal class GenericCallService<T, R> : MessageHandler where T : ZOROSMessageInterface where R : ZOROSMessageInterface {
+        internal class GenericCallService<T, R> : MessageHandler where T : ZOROSMessageInterface where R : ZOROSMessageInterface
+        {
             public string op { get; set; }
             public string id { get; set; }
             public string service { get; set; }
             public T args { get; set; }
-            internal GenericCallService(string service, T args, string id, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> OnReceiveDelegate) {
+            internal GenericCallService(string service, T args, string id, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> OnReceiveDelegate)
+            {
                 this.op = "call_service";
                 this.service = service;
                 this.args = args;
@@ -354,17 +384,20 @@ namespace ZO.ROS {
                 this.OnMessageReceivedHandler = OnReceiveDelegate;
             }
 
-            internal GenericCallService() {
+            internal GenericCallService()
+            {
                 this.op = "call_service";
                 this.service = service;
                 this.args = args;
                 this.id = id;
             }
 
-            public override ZOROSMessageInterface DeserializeBSON(byte[] data) {
+            public override ZOROSMessageInterface DeserializeBSON(byte[] data)
+            {
                 GenericServiceResponse<R> receivedPublishMessage = new GenericServiceResponse<R>();
                 MemoryStream memoryStream = new MemoryStream(data);
-                using (BsonDataReader reader = new BsonDataReader(memoryStream)) {
+                using (BsonDataReader reader = new BsonDataReader(memoryStream))
+                {
                     JsonSerializer serializer = new JsonSerializer();
                     receivedPublishMessage = serializer.Deserialize<GenericServiceResponse<R>>(reader);
                 }
@@ -372,7 +405,8 @@ namespace ZO.ROS {
                 return receivedPublishMessage.values;
             }
 
-            public override ZOROSMessageInterface DeserializeJSON(string json) {
+            public override ZOROSMessageInterface DeserializeJSON(string json)
+            {
                 ZOROSMessageInterface messageObject = JsonConvert.DeserializeObject<R>(json);
                 return messageObject;
             }
@@ -407,29 +441,39 @@ namespace ZO.ROS {
         ///    await _rosBridgeConnection.ConnectAsync();
         /// });
         /// </code></example>
-        public async Task ConnectAsync() {
+        public async Task ConnectAsync()
+        {
 
             _isConnected = false;
             _tcpClient = new TcpClient();
-            while (_isConnected == false) {
-                try {
+            while (_isConnected == false)
+            {
+                try
+                {
                     IPAddress[] iPAddresses = Dns.GetHostAddresses(Hostname);
                     // find the IP V4 addresss from list of addresses.
                     IPAddress ipv4Address = null;
-                    foreach (var addresss in iPAddresses) {
-                        if (addresss.AddressFamily == AddressFamily.InterNetwork) {
+                    foreach (var addresss in iPAddresses)
+                    {
+                        if (addresss.AddressFamily == AddressFamily.InterNetwork)
+                        {
                             ipv4Address = addresss;
                             break;
                         }
                     }
-                    if (ipv4Address != null) {
+                    if (ipv4Address != null)
+                    {
                         await _tcpClient.ConnectAsync(ipv4Address.ToString(), Port);
                         Task.Delay(1000).Wait(); // pause a short bit for things to settle
                         _isConnected = true;
-                    } else {
+                    }
+                    else
+                    {
                         Debug.LogError("INFO: ZOROSBridgeConnection could not resolve hostname: " + Hostname);
                     }
-                } catch (SocketException e) {
+                }
+                catch (SocketException e)
+                {
                     Debug.LogWarning("WARNING: ZOROSBridgeConnection SocketException: " + e.ToString());
                     await Task.Delay(5000); // wait for 5 seconds
                 }
@@ -438,9 +482,12 @@ namespace ZO.ROS {
             Debug.Log("INFO: ZOROSBridgeConnection::ConnectAsync connected...");
 
             // inform listeners of connection
-            try {
-               _connectEvent.Invoke(this);
-            } catch (Exception e) {
+            try
+            {
+                _connectEvent.Invoke(this);
+            }
+            catch (Exception e)
+            {
                 Debug.LogError("ERROR: ConnectAsync::OnConnectedToROSBridge: " + e.ToString());
             }
 
@@ -452,13 +499,15 @@ namespace ZO.ROS {
         /// Stops ROS Bridge TCP Connection.  
         /// </summary>
         /// <returns></returns>
-        public async void Stop() {
+        public async void Stop()
+        {
             Debug.Log("INFO: ZOROSBridgeConnection::Stop Requested");
 
             // inform everyone we are disconnecting
             _disconnectEvent?.Invoke(this);
 
-            if (_isConnected == true && _tcpClient != null) {
+            if (_isConnected == true && _tcpClient != null)
+            {
                 _tcpClient.GetStream().Close();
                 _tcpClient.Close();
                 _tcpClient = null;
@@ -474,16 +523,24 @@ namespace ZO.ROS {
         /// <param name="type">ROS message type. For example "geometry_msgs/Twist"</param>
         /// <param name="id">ROS node id.  Default "zero_sim_unity"</param>
         /// <returns></returns>        
-        public async void Advertise(string topic, string type, string id = "zero_sim_unity") {
+        public async void Advertise(string topic, string type, string id = "zero_sim_unity")
+        {
+            if (topic != "/tf" && topic != "/clock" && topic != "/tf_static")
+            {
+                Debug.Log("INFO: ZOROSBridgeConnection::Advertise: " + topic + " type: " + type + " id: " + id);
+            }
             JObject advertiseJSON = new JObject(
                 new JProperty("op", "advertise"),
                 new JProperty("topic", topic),
                 new JProperty("type", type),
                 new JProperty("id", id)
             );
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(advertiseJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
                 await SendBSONAsync(advertiseJSON);
             }
         }
@@ -493,14 +550,18 @@ namespace ZO.ROS {
         /// </summary>
         /// <param name="topic"></param>
         /// <returns></returns>
-        public async void UnAdvertise(string topic) {
+        public async void UnAdvertise(string topic)
+        {
             JObject unAdvertiseJSON = new JObject(
                 new JProperty("op", "unadvertise"),
                 new JProperty("topic", topic)
             );
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(unAdvertiseJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
                 await SendBSONAsync(unAdvertiseJSON);
             }
 
@@ -539,20 +600,25 @@ namespace ZO.ROS {
         /// <param name="subscriptionCallback">Called when message is received.</param>
         /// <typeparam name="T">ZOROSMessageInterface</typeparam>
         /// <returns></returns>
-        public async void Subscribe<T>(string id, string topic, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> subscriptionCallback) where T : ZOROSMessageInterface {
+        public async void Subscribe<T>(string id, string topic, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> subscriptionCallback) where T : ZOROSMessageInterface
+        {
 
             GenericMessageSubscribe<T> rosBridgeSubscription = new GenericMessageSubscribe<T>(id, topic, type, subscriptionCallback);
 
             // build up the subscriber callback dictionary
-            if (_subscribers.ContainsKey(topic) == false) {
+            if (_subscribers.ContainsKey(topic) == false)
+            {
                 // if no subscribers create a list of subscribers
                 _subscribers.Add(topic, new List<MessageHandler>());
             }
             // add the subscriber to the list
             _subscribers[topic].Add(rosBridgeSubscription);
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(JsonConvert.SerializeObject(rosBridgeSubscription));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
 
                 MemoryStream memoryStream = new MemoryStream();
                 BsonDataWriter writer = new BsonDataWriter(memoryStream);
@@ -568,15 +634,19 @@ namespace ZO.ROS {
         /// </summary>
         /// <param name="topic"></param>
         /// <returns></returns>
-        public async void Unsubscribe(string id, string topic) {
+        public async void Unsubscribe(string id, string topic)
+        {
             JObject unsubscribeJSON = new JObject(
                 new JProperty("op", "unsubscribe"),
                 new JProperty("id", id),
                 new JProperty("topic", topic)
             );
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(unsubscribeJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
                 await SendBSONAsync(unsubscribeJSON);
             }
 
@@ -593,12 +663,15 @@ namespace ZO.ROS {
         /// <param name="id">Unique ID of sender.</param>
         /// <typeparam name="T">ROS Message derived from ZOROSMessageInterface</typeparam>
         /// <returns></returns>
-        public async void Publish<T>(T message, string topic, string id = "zero_sim_unity") where T : ZOROSMessageInterface {
+        public async void Publish<T>(T message, string topic, string id = "zero_sim_unity") where T : ZOROSMessageInterface
+        {
 
-            if (IsConnected == false) {
+            if (IsConnected == false)
+            {
                 Debug.LogWarning("WARNING: attempting to publish though we are not connected to ROS bridge");
             }
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 JObject publishJSON = new JObject(
                     new JProperty("op", "publish"),
                     new JProperty("topic", topic),
@@ -606,7 +679,9 @@ namespace ZO.ROS {
                 );
 
                 await SendJSONStringAsync(publishJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
 
                 GenericMessagePublish<T> publishCommunication = new GenericMessagePublish<T>(id, topic, message);
 
@@ -626,7 +701,8 @@ namespace ZO.ROS {
         /// <param name="service">The name of the service to advertise.</param>
         /// <param name="type">The advertised service message type.</param>
         /// <returns></returns>
-        public async void AdvertiseService<T>(string service, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, string, Task> serviceRequest) where T : ZOROSMessageInterface {
+        public async void AdvertiseService<T>(string service, string type, Func<ZOROSBridgeConnection, ZOROSMessageInterface, string, Task> serviceRequest) where T : ZOROSMessageInterface
+        {
             JObject advertiseJSON = new JObject(
                 new JProperty("op", "advertise_service"),
                 new JProperty("service", service),
@@ -637,9 +713,12 @@ namespace ZO.ROS {
 
             _serviceProviders.Add(service, rosBridgeService);
 
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(JsonConvert.SerializeObject(rosBridgeService));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
 
                 MemoryStream memoryStream = new MemoryStream();
                 BsonDataWriter writer = new BsonDataWriter(memoryStream);
@@ -656,14 +735,18 @@ namespace ZO.ROS {
         /// </summary>
         /// <param name="service">the name of the service to unadvertise</param>
         /// <returns></returns>
-        public async void UnAdvertiseService(string service) {
+        public async void UnAdvertiseService(string service)
+        {
             JObject advertiseJSON = new JObject(
                 new JProperty("op", "unadvertise_service"),
                 new JProperty("service", service)
             );
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 await SendJSONStringAsync(advertiseJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
                 await SendBSONAsync(advertiseJSON);
             }
         }
@@ -678,22 +761,27 @@ namespace ZO.ROS {
         /// <param name="id">if an ID was provided to the service request, then the service response will contain the ID</param>
         /// <typeparam name="T">Response message</typeparam>
         /// <returns></returns>
-        public async void ServiceResponse<T>(T response_message, string service, bool result, string id) where T : ZOROSMessageInterface {
+        public async void ServiceResponse<T>(T response_message, string service, bool result, string id) where T : ZOROSMessageInterface
+        {
 
 
-            if (Serialization == SerializationType.JSON) {
+            if (Serialization == SerializationType.JSON)
+            {
                 JObject serviceResponseJSON = new JObject(
                     new JProperty("op", "service_response"),
                     new JProperty("service", service),
                     new JProperty("values", JObject.FromObject(response_message)),
                     new JProperty("result", result)
                 );
-                if (id.Length > 0) {
+                if (id.Length > 0)
+                {
                     serviceResponseJSON.Add("id", id);
                 }
 
                 await SendJSONStringAsync(serviceResponseJSON.ToString(Formatting.None));
-            } else if (Serialization == SerializationType.BSON) {
+            }
+            else if (Serialization == SerializationType.BSON)
+            {
 
                 GenericServiceResponse<T> serviceResponse = new GenericServiceResponse<T>(service, result, response_message, id);
 
@@ -718,8 +806,10 @@ namespace ZO.ROS {
         /// <typeparam name="T">Service call message type</typeparam>
         /// <typeparam name="R">Service response message type</typeparam>
         /// <returns></returns>
-        public async void CallService<T, R>(T calling_message, string service, string id, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> serviceCallResponse) where T : ZOROSMessageInterface where R : ZOROSMessageInterface {
-            if (IsConnected == false) {
+        public async void CallService<T, R>(T calling_message, string service, string id, Func<ZOROSBridgeConnection, ZOROSMessageInterface, Task> serviceCallResponse) where T : ZOROSMessageInterface where R : ZOROSMessageInterface
+        {
+            if (IsConnected == false)
+            {
                 Debug.LogWarning("WARNING: attempting to call service though we are not connected to ROS bridge");
             }
             GenericCallService<T, R> callService = new GenericCallService<T, R>(service, calling_message, id, serviceCallResponse);
@@ -731,10 +821,14 @@ namespace ZO.ROS {
             _serviceCallResponseHandlers.Enqueue(callService);
 
             // if the first service call
-            if (_serviceCallResponseHandlers.Count == 1) {
-                if (Serialization == SerializationType.JSON) {
+            if (_serviceCallResponseHandlers.Count == 1)
+            {
+                if (Serialization == SerializationType.JSON)
+                {
                     await SendJSONStringAsync(JsonConvert.SerializeObject(callService));
-                } else if (Serialization == SerializationType.BSON) {
+                }
+                else if (Serialization == SerializationType.BSON)
+                {
 
                     MemoryStream memoryStream = new MemoryStream();
                     BsonDataWriter writer = new BsonDataWriter(memoryStream);
@@ -750,72 +844,91 @@ namespace ZO.ROS {
 
 
 
-        private async Task ClientReadAsync() {
+        private async Task ClientReadAsync()
+        {
             Debug.Log("INFO: ZOROSBridgeConnection::ClientReadAsync Start");
             const int bufferSize = 1024;
-            byte[] buffer = new byte[bufferSize];  
+            byte[] buffer = new byte[bufferSize];
 
 
-            while (_isConnected) {
+            while (_isConnected)
+            {
                 int bytesRead = -1;
                 int totalBytes = 0;
-                try {
+                try
+                {
 
                     MemoryStream memoryStream = new MemoryStream();
 
-                   do {
+                    do
+                    {
                         bytesRead = await _tcpClient.GetStream().ReadAsync(buffer, 0, buffer.Length);
                         memoryStream.Write(buffer, 0, bytesRead);
                         totalBytes += bytesRead;
                         // Debug.Log($"INFO: bytesRead: {bytesRead} totalBytes: {totalBytes}");
-                    } while(_tcpClient.GetStream().DataAvailable);
+                    } while (_tcpClient.GetStream().DataAvailable);
 
-                    if (totalBytes > 0) {
+                    if (totalBytes > 0)
+                    {
 
                         byte[] finalBuffer = memoryStream.ToArray();
 
-                        if (Serialization == SerializationType.JSON) {
-                            
+                        if (Serialization == SerializationType.JSON)
+                        {
+
                             // check if we have valid JSON by checking if we have the '{' & '}'
-                            if (finalBuffer[0] == '{' && buffer[totalBytes - 1] == '}') {
+                            if (finalBuffer[0] == '{' && buffer[totalBytes - 1] == '}')
+                            {
                                 string msg = System.Text.Encoding.UTF8.GetString(finalBuffer, 0, totalBytes);
                                 JObject msgJSON = JObject.Parse(msg);
                                 string topic = msgJSON["topic"].Value<string>();
-                                foreach (var subscriber in _subscribers[topic]) {
+                                foreach (var subscriber in _subscribers[topic])
+                                {
                                     ZOROSMessageInterface message = subscriber.DeserializeJSON(msgJSON["msg"].ToString());
                                     await subscriber.OnMessageReceivedHandler(this, message);
                                     // await subscriberCallback(this, msgJSON["msg"].ToString());
                                 }
                                 // Debug.Log("INFO: ReadAsync string: " + msg);
-                            } else {
+                            }
+                            else
+                            {
                                 Debug.LogWarning("WARNING: ZOROSBridgeConnection::ClientReadAsync invalid JSON");
                             }
 
-                        } else if (Serialization == SerializationType.BSON) {
+                        }
+                        else if (Serialization == SerializationType.BSON)
+                        {
 
                             // TODO: we have to deserialize to JSON because we do not know the type of the object
                             // coming in.  Would be faster to be able to "peek" into the BSON and then deserialize...
                             JObject msgJSON = null;
-                            using (BsonDataReader reader = new BsonDataReader(new MemoryStream(finalBuffer))) {
+                            using (BsonDataReader reader = new BsonDataReader(new MemoryStream(finalBuffer)))
+                            {
                                 msgJSON = (JObject)JToken.ReadFrom(reader);
                             }
 
                             // switch on ROS Bridge operation
                             string op = msgJSON["op"].Value<string>();
-                            if (op == "publish") {
+                            if (op == "publish")
+                            {
                                 string topic = msgJSON["topic"].Value<string>();
-                                foreach (var subscriber in _subscribers[topic]) {
+                                foreach (var subscriber in _subscribers[topic])
+                                {
                                     // deserialize bson message and pass on to any subscribers
                                     ZOROSMessageInterface message = subscriber.DeserializeJSON(msgJSON["msg"].ToString());
                                     await subscriber.OnMessageReceivedHandler(this, message);
                                 }
-                            } else if (op == "call_service") {
+                            }
+                            else if (op == "call_service")
+                            {
                                 string service = msgJSON["service"].Value<string>();
                                 var serviceHandler = _serviceProviders[service];
                                 ZOROSMessageInterface message = serviceHandler.DeserializeJSON(msgJSON["args"].ToString());
                                 string id = msgJSON["id"].Value<string>();
                                 await serviceHandler.OnServiceCallHandler(this, message, id);
-                            } else if (op == "service_response") {
+                            }
+                            else if (op == "service_response")
+                            {
                                 // string jsonString = msgJSON.ToString(Formatting.None);
 
                                 string service = msgJSON["service"].Value<string>();
@@ -826,7 +939,8 @@ namespace ZO.ROS {
 
                                 // get the message.  the message defaults to "empty" of no "values" key.
                                 ZOROSMessageInterface message = new EmptyServiceResponse();
-                                if (msgJSON.ContainsKey("values") == true) {
+                                if (msgJSON.ContainsKey("values") == true)
+                                {
                                     message = serviceResponseHandler.DeserializeJSON(msgJSON["values"].ToString());
                                 }
 
@@ -834,10 +948,14 @@ namespace ZO.ROS {
 
                                 // dispatch anymore service calls in the queue
                                 MessageHandler nextServiceCall = _serviceCallResponseHandlers.Peek();
-                                if (nextServiceCall != null) {
-                                    if (Serialization == SerializationType.JSON) {
+                                if (nextServiceCall != null)
+                                {
+                                    if (Serialization == SerializationType.JSON)
+                                    {
                                         await SendJSONStringAsync(JsonConvert.SerializeObject(nextServiceCall));
-                                    } else if (Serialization == SerializationType.BSON) {
+                                    }
+                                    else if (Serialization == SerializationType.BSON)
+                                    {
 
                                         MemoryStream bsonMemoryStream = new MemoryStream();
                                         BsonDataWriter writer = new BsonDataWriter(bsonMemoryStream);
@@ -848,7 +966,9 @@ namespace ZO.ROS {
                                     }
                                 }
 
-                            } else {
+                            }
+                            else
+                            {
                                 Debug.LogWarning("WARNING: Unhandle ROS Bridge operation: " + op);
                             }
 
@@ -856,12 +976,16 @@ namespace ZO.ROS {
 
                         }
 
-                    } else {
+                    }
+                    else
+                    {
                         Debug.LogWarning("WARNING: 0 bytes read.  connection closed.");
                         _isConnected = false;
                     }
 
-                } catch (System.Exception e) {
+                }
+                catch (System.Exception e)
+                {
                     Debug.LogWarning("ERROR: ZOROSBridgeConnection::ClientReadAsync " + e.ToString());
                 }
 
@@ -869,8 +993,10 @@ namespace ZO.ROS {
         }
 
 
-        public async Task SendJSONStringAsync(string message) {
-            if (_isConnected == false) {
+        public async Task SendJSONStringAsync(string message)
+        {
+            if (_isConnected == false)
+            {
                 return;
             }
 
@@ -881,8 +1007,10 @@ namespace ZO.ROS {
             _tcpClient.GetStream().WriteByte(0xFF);
         }
 
-        public void SendJSONString(string message) {
-            if (_isConnected == false) {
+        public void SendJSONString(string message)
+        {
+            if (_isConnected == false)
+            {
                 return;
             }
 
@@ -893,40 +1021,52 @@ namespace ZO.ROS {
             _tcpClient.GetStream().WriteByte(0xFF);
         }
 
-        public async Task SendBSONAsync(byte[] byteArray) {
-            if (_isConnected == false) {
+        public async Task SendBSONAsync(byte[] byteArray)
+        {
+            if (_isConnected == false)
+            {
                 return;
             }
-            if (_tcpClient.Connected == false) {
+            if (_tcpClient.Connected == false)
+            {
                 _isConnected = false;
                 return;
             }
-            if (_tcpClient.GetStream() == null) {
+            if (_tcpClient.GetStream() == null)
+            {
                 _isConnected = false;
                 return;
             }
 
-            try {
+            try
+            {
                 await _tcpClient.GetStream()?.WriteAsync(byteArray, 0, byteArray.Length);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 Debug.LogWarning("WARNING: ZOROSBridgeConnection::SendBSONAsync: " + e.ToString());
             }
         }
-        public async Task SendBSONAsync(MemoryStream memoryStream) {
+        public async Task SendBSONAsync(MemoryStream memoryStream)
+        {
             await SendBSONAsync(memoryStream.ToArray());
         }
 
-        public async Task SendBSONAsync(JObject json) {
+        public async Task SendBSONAsync(JObject json)
+        {
 
             MemoryStream memoryStream = new MemoryStream();
-            using (BsonDataWriter writer = new BsonDataWriter(memoryStream)) {
+            using (BsonDataWriter writer = new BsonDataWriter(memoryStream))
+            {
                 json.WriteTo(writer);
             }
             await SendBSONAsync(memoryStream);
         }
 
-        public void SendBSON(byte[] byteArray) {
-            if (_isConnected == false) {
+        public void SendBSON(byte[] byteArray)
+        {
+            if (_isConnected == false)
+            {
                 Debug.LogWarning("WARNING: SendBSON when not connected.");
                 return;
             }
@@ -934,14 +1074,17 @@ namespace ZO.ROS {
             _tcpClient.GetStream().Write(byteArray, 0, byteArray.Length);
         }
 
-        public void SendBSON(MemoryStream memoryStream) {
+        public void SendBSON(MemoryStream memoryStream)
+        {
             SendBSON(memoryStream.ToArray());
         }
 
-        public void SendBSON(JObject json) {
+        public void SendBSON(JObject json)
+        {
 
             MemoryStream memoryStream = new MemoryStream();
-            using (BsonDataWriter writer = new BsonDataWriter(memoryStream)) {
+            using (BsonDataWriter writer = new BsonDataWriter(memoryStream))
+            {
                 json.WriteTo(writer);
             }
             SendBSON(memoryStream);

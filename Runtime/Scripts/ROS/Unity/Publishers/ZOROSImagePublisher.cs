@@ -97,6 +97,10 @@ namespace ZO.ROS.Publisher
             {
                 RGBCameraSensor = GetComponent<ZORGBCamera>();
             }
+
+            _imageROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/face_cam/image_raw/compressed";
+            _cameraInfoROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/face_cam/camera_info";
+
         }
 
         private void Initialize()
@@ -174,8 +178,8 @@ namespace ZO.ROS.Publisher
             }
             else
             {
-                _rosImageMessage.header.frame_id = Name;
-                _rosCameraInfoMessage.header.frame_id = Name;
+                _rosImageMessage.header.frame_id = gameObject.transform.root.gameObject.name + "_" + Name;
+                _rosCameraInfoMessage.header.frame_id = gameObject.transform.root.gameObject.name + "_" + Name;
             }
 
             // setup and send Image message
@@ -196,7 +200,6 @@ namespace ZO.ROS.Publisher
 
 
             // setup and send CameraInfo message            
-            _rosCameraInfoMessage.Update();
             _rosCameraInfoMessage.header = _rosImageMessage.header;
             // initialize the camera info
             if (RGBCameraSensor.UnityCamera.usePhysicalProperties == true)

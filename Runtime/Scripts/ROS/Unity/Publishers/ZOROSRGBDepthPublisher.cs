@@ -69,6 +69,17 @@ namespace ZO.ROS.Publisher
             {
                 TryGetComponent<ZORGBDepthCamera>(out _rgbDepthCameraSensor);
             }
+            _rgbImageROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/color/image_raw/compressed";
+            _depthROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/depth/image_raw";
+            _cameraInfoROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/color/camera_info";
+            _depthCameraInfoROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/depth/camera_info";
+
+            string rootName = gameObject.transform.root.gameObject.name;
+            _colorImageMessage.header.frame_id = rootName + "_" + _rgbTransformName;
+            _depthImageMessage.header.frame_id = rootName + "_" + _depthTransformName;
+            _cameraInfoMessage.header.frame_id = rootName + "_" + _rgbTransformName;
+            _depthInfoMessage.header.frame_id = rootName + "_" + _depthTransformName;
+
         }
 
 
@@ -152,10 +163,7 @@ namespace ZO.ROS.Publisher
 
 
             // setup the transforms
-            _colorImageMessage.header.frame_id = _rgbTransformName;
-            _depthImageMessage.header.frame_id = _depthTransformName;
-            _cameraInfoMessage.header.frame_id = _rgbTransformName;
-            _depthInfoMessage.header.frame_id = _depthTransformName;
+
 
             // hookup to the sensor update delegate
             _rgbDepthCameraSensor.OnPublishDelegate = OnPublishRGBDepthDelegate;
@@ -209,7 +217,6 @@ namespace ZO.ROS.Publisher
 
         private Task OnPublishRGBDepthDelegate(ZORGBDepthCamera rgbdCamera, string cameraId, int width, int height, byte[] rgbData, float[] depthData)
         {
-
             // publish rgb color image 
             _colorImageMessage.header.Update();
 
@@ -237,9 +244,7 @@ namespace ZO.ROS.Publisher
             System.Buffer.BlockCopy(depthData, 0, _depthImageMessage.data, 0, 4 * width * height);
             ROSBridgeConnection.Publish<ImageMessage>(_depthImageMessage, _depthROSTopic, cameraId);
 
-            _cameraInfoMessage.Update();
             _cameraInfoMessage.header = _colorImageMessage.header;
-            _depthInfoMessage.Update();
             _depthInfoMessage.header = _depthImageMessage.header;
             ROSBridgeConnection.Publish<CameraInfoMessage>(_cameraInfoMessage, _cameraInfoROSTopic, cameraId);
             ROSBridgeConnection.Publish<CameraInfoMessage>(_depthInfoMessage, _depthCameraInfoROSTopic, cameraId);
