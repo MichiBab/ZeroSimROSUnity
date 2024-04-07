@@ -12,7 +12,8 @@ using ZO.Physics;
 using ZO.Document;
 
 
-namespace ZO.ROS.Controllers {
+namespace ZO.ROS.Controllers
+{
 
     /// <summary>
     /// Overview:     
@@ -32,7 +33,8 @@ namespace ZO.ROS.Controllers {
     /// See: https://github.com/ros-controls/ros_controllers/blob/indigo-devel/diff_drive_controller/include/diff_drive_controller/diff_drive_controller.h
     /// </reference>
     /// TODO: Make this a ZOROSUnityGameObjectBase and a controller interface
-    public class ZODifferentialDriveController : ZOROSUnityGameObjectBase {
+    public class ZODifferentialDriveController : ZOROSUnityGameObjectBase
+    {
 
 
         public ZOSimOccurrence _connectedBody;
@@ -41,27 +43,30 @@ namespace ZO.ROS.Controllers {
         /// The main rigid body of the controller. Would usually be the "main chassis" of a robot.
         /// </summary>
         /// <value></value>
-        public Rigidbody ConnectedRigidBody {
+        public Rigidbody ConnectedRigidBody
+        {
             get { return _connectedBody.GetComponent<Rigidbody>(); }
         }
-        [SerializeField] [ZOReadOnly] public ZOHingeJoint _rightWheelMotor;
+        [SerializeField][ZOReadOnly] public ZOHingeJoint _rightWheelMotor;
 
         /// <summary>
         /// Hinge joint that drives the right wheel.
         /// </summary>
         /// <value></value>
-        public ZOHingeJoint RightWheelMotor {
+        public ZOHingeJoint RightWheelMotor
+        {
             get => _rightWheelMotor;
             set => _rightWheelMotor = value;
         }
 
-        [SerializeField] [ZOReadOnly] public ZOHingeJoint _leftWheelMotor;
+        [SerializeField][ZOReadOnly] public ZOHingeJoint _leftWheelMotor;
 
         /// <summary>
         /// Hinge joint that drive the left wheel.
         /// </summary>
         /// <value></value>
-        public ZOHingeJoint LeftWheelMotor {
+        public ZOHingeJoint LeftWheelMotor
+        {
             get => _leftWheelMotor;
             set => _leftWheelMotor = value;
         }
@@ -73,8 +78,10 @@ namespace ZO.ROS.Controllers {
         private float _angularVelocity = 0;
 
         // NOTE: this can only be called in FixedUpdate
-        public float LinearVelocity {
-            set {
+        public float LinearVelocity
+        {
+            set
+            {
                 _linearVelocity = value;
                 UpdateMotors();
             }
@@ -82,8 +89,10 @@ namespace ZO.ROS.Controllers {
         }
 
         // NOTE: this can only be called in FixedUpdate
-        public float AngularVelocity {
-            set {
+        public float AngularVelocity
+        {
+            set
+            {
                 _angularVelocity = value;
                 UpdateMotors();
             }
@@ -93,25 +102,31 @@ namespace ZO.ROS.Controllers {
 
 
 
-        public override string Type {
-            get {
+        public override string Type
+        {
+            get
+            {
                 return "controller.differential_drive";
             }
         }
 
-        void OnValidate() {
+        void OnValidate()
+        {
             // make sure we have a name
-            if (string.IsNullOrEmpty(Name)) {
+            if (string.IsNullOrEmpty(Name))
+            {
                 Name = gameObject.name + "_" + Type;
             }
 
         }
 
-        protected override void ZOAwake() {
+        protected override void ZOAwake()
+        {
             base.ZOAwake();
 
             // make sure we have a name
-            if (string.IsNullOrEmpty(Name)) {
+            if (string.IsNullOrEmpty(Name))
+            {
                 Name = gameObject.name + "_" + Type;
             }
 
@@ -119,25 +134,33 @@ namespace ZO.ROS.Controllers {
 
 
 
-        protected override void ZOFixedUpdate() {
+        protected override void ZOFixedUpdate()
+        {
             // update the motors from the twist message
             LinearVelocity = (float)-_twistMessage.linear.x * Mathf.Rad2Deg;
-            if (_steerOpposite == true) {
+            if (_steerOpposite == true)
+            {
                 AngularVelocity = (float)-_twistMessage.angular.z * Mathf.Rad2Deg;
-            } else {
+            }
+            else
+            {
                 AngularVelocity = (float)_twistMessage.angular.z * Mathf.Rad2Deg;
             }
 
         }
-        protected override void ZOFixedUpdateHzSynchronized() {
+        protected override void ZOFixedUpdateHzSynchronized()
+        {
 
             // publish odometry
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
 
                 // Publish odom on TF as well
+                // Get Unity Main Object Name from root object that THIS object is attached to.
+                string rootName = gameObject.transform.root.gameObject.name;
                 _transformMessage.header.Update();
-                _transformMessage.header.frame_id = ZOROSUnityManager.Instance.WorldFrameId; // connect to the world
-                _transformMessage.child_frame_id = "odom_combined";
+                _transformMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId; // connect to the world
+                _transformMessage.child_frame_id = rootName + "_" + "odom_combined";
                 _transformMessage.UnityLocalTransform = ConnectedRigidBody.transform;
                 ZOROSUnityManager.Instance.BroadcastTransform(_transformMessage);
 
@@ -179,8 +202,8 @@ namespace ZO.ROS.Controllers {
                 _odometryMessage.twist.covariance[35] = 1e3;
 
                 // BUGBUG: not super clear on this being a child of map?
-                _odometryMessage.header.frame_id = ZOROSUnityManager.Instance.WorldFrameId;
-                _odometryMessage.child_frame_id = "odom";
+                _odometryMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId;
+                _odometryMessage.child_frame_id = rootName + "_" + "odom";
 
                 ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, "/odom");
             }
@@ -213,7 +236,8 @@ void GazeboRosDiffDrive::publishWheelTF()
 }            */
 
         }
-        private void UpdateMotors() {
+        private void UpdateMotors()
+        {
             float leftVelocity = (LinearVelocity + AngularVelocity * _wheelSeperation / 2.0f) / _wheelRadius;
             float rightVelocity = (LinearVelocity - AngularVelocity * _wheelSeperation / 2.0f) / _wheelRadius;
 
@@ -229,7 +253,8 @@ void GazeboRosDiffDrive::publishWheelTF()
         /// <summary>
         /// See: https://github.com/ros-controls/ros_controllers/blob/noetic-devel/diff_drive_controller/src/odometry.cpp 
         /// </summary>
-        private void CalculateOdometryOpenLoop() {
+        private void CalculateOdometryOpenLoop()
+        {
             /* see: https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/src/gazebo_ros_diff_drive.cpp
 void GazeboRosDiffDrive::UpdateOdometryEncoder()
 {
@@ -293,13 +318,16 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
             */
             float dt = Time.deltaTime;
 
-            if (Mathf.Abs(AngularVelocity) < 1e-6f) {
+            if (Mathf.Abs(AngularVelocity) < 1e-6f)
+            {
                 // Runge-Kutta 2nd order integration
                 float direction = _odomHeading + AngularVelocity * 0.5f;
                 _odomX += LinearVelocity * Mathf.Cos(direction);
                 _odomY += LinearVelocity * Mathf.Sin(direction);
                 _odomHeading += AngularVelocity;
-            } else {
+            }
+            else
+            {
                 float headingOld = _odomHeading;
                 float r = LinearVelocity / AngularVelocity;
                 _odomHeading += AngularVelocity;
@@ -322,17 +350,20 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
         private TransformStampedMessage _transformMessage = new TransformStampedMessage();
 
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)  {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
 
             // subscribe to Twist Message
             ZOROSBridgeConnection.Instance.Subscribe<TwistMessage>(Name, _ROSTopicSubscription, _twistMessage.MessageType, OnROSTwistMessageReceived);
 
             // adverise Odometry Message
+            Debug.Log("Advertising: " + "/odom" + " " + _odometryMessage.MessageType);
             ZOROSBridgeConnection.Instance.Advertise("/odom", _odometryMessage.MessageType);
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             ZOROSBridgeConnection.Instance.UnAdvertise(_ROSTopicSubscription);
             Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeDisconnected");
         }
@@ -344,7 +375,8 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
         /// <param name="rosBridgeConnection">ROS Bridge Connection</param>
         /// <param name="msg">TwistMessage</param>
         /// <returns></returns>
-        public Task OnROSTwistMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg) {
+        public Task OnROSTwistMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg)
+        {
             _twistMessage = (TwistMessage)msg;
             // Debug.Log("INFO: Twist Message Received: linear " + _twistMessage.linear.ToString() + " angular: " + _twistMessage.angular.ToString());
 

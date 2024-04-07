@@ -6,12 +6,14 @@ using ZO.ROS.MessageTypes.Geometry;
 using ZO.ROS.Unity;
 using ZO.Document;
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
     /// <summary>
     /// Publish ROS TF of the Unity Transform this script is attached to.
     /// See: http://wiki.ros.org/tf
     /// </summary>
-    public class ZOROSTransformPublisher : ZOROSUnityGameObjectBase {
+    public class ZOROSTransformPublisher : ZOROSUnityGameObjectBase
+    {
         public string _frameId = "";
         public string _childFrameId = "";
 
@@ -19,7 +21,8 @@ namespace ZO.ROS.Publisher {
         /// The name of *THIS* frame.
         /// </summary>
         /// <value></value>
-        public string ChildFrameID {
+        public string ChildFrameID
+        {
             get => _childFrameId;
             set => _childFrameId = value;
         }
@@ -28,59 +31,75 @@ namespace ZO.ROS.Publisher {
         /// The name of the parent frame.
         /// </summary>
         /// <value></value>
-        public string FrameID {
+        public string FrameID
+        {
             get => _frameId;
             set => _frameId = value;
         }
 
         private TransformStampedMessage _transformMessage = new TransformStampedMessage();
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
             // if the child frame id is not set then set it to be the name of this game object.
-            if (string.IsNullOrEmpty(ChildFrameID) == true) {
+            if (string.IsNullOrEmpty(ChildFrameID) == true)
+            {
                 ChildFrameID = this.gameObject.name;
             }
 
         }
-        protected override void ZOUpdateHzSynchronized() {
+        protected override void ZOUpdateHzSynchronized()
+        {
+            string rootName = gameObject.transform.root.gameObject.name;
+
             _transformMessage.header.Update();
-            _transformMessage.header.frame_id = FrameID;
-            _transformMessage.child_frame_id = ChildFrameID;
+            _transformMessage.header.frame_id = rootName + "_" + FrameID;
+            _transformMessage.child_frame_id = rootName + "_" + ChildFrameID;
             _transformMessage.FromLocalUnityTransformToROS(this.transform);
 
             ROSUnityManager.BroadcastTransform(_transformMessage);
 
         }
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
-            if (string.IsNullOrEmpty(ChildFrameID) == true) {
+            if (string.IsNullOrEmpty(ChildFrameID) == true)
+            {
                 ChildFrameID = Name;
             }
-            if (string.IsNullOrEmpty(FrameID) == true) {
-                if (transform.parent) {
+            if (string.IsNullOrEmpty(FrameID) == true)
+            {
+                if (transform.parent)
+                {
                     FrameID = transform.parent.name;
-                } else {
+                }
+                else
+                {
                     FrameID = ZOROSUnityManager.Instance.WorldFrameId;
                 }
             }
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 10;
             }
         }
 
-        public override string Type {
+        public override string Type
+        {
             get { return "ros.publisher.transform"; }
         }
 
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSTransformPublisher::OnROSBridgeConnected");
 
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSTransformPublisher::OnROSBridgeDisconnected");
         }
 

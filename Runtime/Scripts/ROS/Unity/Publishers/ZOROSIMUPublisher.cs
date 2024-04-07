@@ -8,14 +8,16 @@ using ZO.Sensors;
 using ZO.ROS.Unity;
 using ZO.Document;
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
 
     /// <summary>
     /// Publish ROS Imu message using ZOIMU sensor.
     /// </summary>
     [RequireComponent(typeof(ZOROSTransformPublisher))]
     [RequireComponent(typeof(ZOIMU))]
-    public class ZOROSIMUPublisher : ZOROSUnityGameObjectBase {
+    public class ZOROSIMUPublisher : ZOROSUnityGameObjectBase
+    {
 
         public ZOIMU _imuSensor;
 
@@ -23,12 +25,14 @@ namespace ZO.ROS.Publisher {
         /// The IMU sensor.
         /// </summary>
         /// <value></value>
-        public ZOIMU IMUSensor {
+        public ZOIMU IMUSensor
+        {
             get => _imuSensor;
             set => _imuSensor = value;
         }
 
-        public enum CoordinateSystemEnum {
+        public enum CoordinateSystemEnum
+        {
             RightHanded_XBackward_YLeft_ZUp,
             RightHanded_XRight_YDown_ZForward,       // RealSense D435i
             Unity_LeftHanded_XRight_YUp_ZForward,   // Unity Standard
@@ -44,7 +48,8 @@ namespace ZO.ROS.Publisher {
         /// ROS_RightHanded_XForward_YLeft_ZUp: ROS standard reference frame.
         /// </summary>
         /// <value></value>
-        public CoordinateSystemEnum CoordinateSystem {
+        public CoordinateSystemEnum CoordinateSystem
+        {
             get { return _coordinateSystem; }
             set { _coordinateSystem = value; }
         }
@@ -58,7 +63,8 @@ namespace ZO.ROS.Publisher {
         /// The resisting force aims up to the ceiling.
         /// </summary>
         /// <value></value>
-        public bool ReverseLinearAccelerations {
+        public bool ReverseLinearAccelerations
+        {
             get { return _reverseLinearAccelerations; }
             set { _reverseLinearAccelerations = value; }
         }
@@ -66,13 +72,17 @@ namespace ZO.ROS.Publisher {
 
 
         private ZOROSTransformPublisher _transformPublisher = null;
-        public ZOROSTransformPublisher TransformPublisher {
-            get {
-                if (_transformPublisher == null) {
+        public ZOROSTransformPublisher TransformPublisher
+        {
+            get
+            {
+                if (_transformPublisher == null)
+                {
                     _transformPublisher = GetComponent<ZOROSTransformPublisher>();
                 }
 
-                if (_transformPublisher == null) {
+                if (_transformPublisher == null)
+                {
                     Debug.LogError("ERROR: ZOROSLaserScanPublisher is missing corresponding ZOROSTransformPublisher");
                 }
                 return _transformPublisher;
@@ -82,14 +92,17 @@ namespace ZO.ROS.Publisher {
         private ImuMessage _imuMessage = new ImuMessage();
 
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
                 Initialize();
             }
         }
 
-        private void Initialize() {
+        private void Initialize()
+        {
             // advertise
             ROSBridgeConnection.Advertise(ROSTopic, _imuMessage.MessageType);
 
@@ -99,36 +112,44 @@ namespace ZO.ROS.Publisher {
         }
 
 
-        protected override void ZOOnDestroy() {
+        protected override void ZOOnDestroy()
+        {
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeConnected");
             Initialize();
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeDisconnected");
             ROSBridgeConnection.UnAdvertise(ROSTopic);
         }
 
-        private Task OnPublishImuDelegate(ZOIMU lidar, string name, Vector3 linearAccel, Vector3 gravity, Vector3 angularVelocity, Quaternion orientation) {
+        private Task OnPublishImuDelegate(ZOIMU lidar, string name, Vector3 linearAccel, Vector3 gravity, Vector3 angularVelocity, Quaternion orientation)
+        {
             _imuMessage.header.Update();
             _imuMessage.header.frame_id = TransformPublisher.ChildFrameID;
 
 
-            if (ReverseLinearAccelerations == true) {
+            if (ReverseLinearAccelerations == true)
+            {
                 linearAccel = linearAccel * -1;
             }
 
 
-            if (_coordinateSystem == CoordinateSystemEnum.ROS_RightHanded_XForward_YLeft_ZUp) {
-                _imuMessage.linear_acceleration.UnityVector3 = (linearAccel + gravity); 
+            if (_coordinateSystem == CoordinateSystemEnum.ROS_RightHanded_XForward_YLeft_ZUp)
+            {
+                _imuMessage.linear_acceleration.UnityVector3 = (linearAccel + gravity);
                 _imuMessage.angular_velocity.UnityVector3 = angularVelocity;
                 _imuMessage.orientation.UnityQuaternion = orientation;
 
-            } else if (CoordinateSystem == CoordinateSystemEnum.RightHanded_XBackward_YLeft_ZUp) {
+            }
+            else if (CoordinateSystem == CoordinateSystemEnum.RightHanded_XBackward_YLeft_ZUp)
+            {
                 //  (x, y, z, w) -> (-x, -z, y, -w).
                 _imuMessage.orientation.x = -orientation.z;
                 _imuMessage.orientation.y = -orientation.x;
@@ -142,7 +163,9 @@ namespace ZO.ROS.Publisher {
                 _imuMessage.angular_velocity.x = -angularVelocity.z;
                 _imuMessage.angular_velocity.y = -angularVelocity.x;
                 _imuMessage.angular_velocity.z = angularVelocity.y;
-            } else if (CoordinateSystem == CoordinateSystemEnum.RightHanded_XRight_YDown_ZForward) { // aka RealSense
+            }
+            else if (CoordinateSystem == CoordinateSystemEnum.RightHanded_XRight_YDown_ZForward)
+            { // aka RealSense
                 Quaternion flippedYOrientation = Quaternion.Euler(Vector3.Scale(orientation.eulerAngles, Vector3.up * -1));
                 _imuMessage.orientation.x = flippedYOrientation.x;
                 _imuMessage.orientation.y = flippedYOrientation.y;
@@ -157,7 +180,9 @@ namespace ZO.ROS.Publisher {
                 _imuMessage.angular_velocity.y = angularVelocity.y; // yaw
                 _imuMessage.angular_velocity.z = -angularVelocity.z; // roll
 
-            } else if (CoordinateSystem == CoordinateSystemEnum.Unity_LeftHanded_XRight_YUp_ZForward) {
+            }
+            else if (CoordinateSystem == CoordinateSystemEnum.Unity_LeftHanded_XRight_YUp_ZForward)
+            {
                 _imuMessage.orientation.x = orientation.x;
                 _imuMessage.orientation.y = orientation.y;
                 _imuMessage.orientation.z = orientation.z;
@@ -181,7 +206,8 @@ namespace ZO.ROS.Publisher {
             return Task.CompletedTask;
         }
 
-        public override string Type {
+        public override string Type
+        {
             get { return "ros.publisher.imu"; }
         }
 

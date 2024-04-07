@@ -6,8 +6,10 @@ using ZO.Util;
 using ZO.Document;
 
 
-namespace ZO.ROS.Unity {
-    public abstract class ZOROSUnityGameObjectBase : ZOGameObjectBase, ZOROSUnityInterface {
+namespace ZO.ROS.Unity
+{
+    public abstract class ZOROSUnityGameObjectBase : ZOGameObjectBase, ZOROSUnityInterface
+    {
 
 
         [Header("ROS Info")]
@@ -17,7 +19,8 @@ namespace ZO.ROS.Unity {
         /// The ROS Topic.  For example "/zerosim/joint_states"
         /// </summary>
         /// <value></value>
-        public virtual string ROSTopic {
+        public virtual string ROSTopic
+        {
             get => _ROSTopic;
             set => _ROSTopic = value;
         }
@@ -26,8 +29,10 @@ namespace ZO.ROS.Unity {
         /// The ROS Bridge singleton shortcut access.
         /// </summary>
         /// <value></value>
-        protected ZOROSBridgeConnection ROSBridgeConnection {
-            get {
+        protected ZOROSBridgeConnection ROSBridgeConnection
+        {
+            get
+            {
                 return ZOROSBridgeConnection.Instance;
             }
         }
@@ -36,8 +41,10 @@ namespace ZO.ROS.Unity {
         /// The ROS Unity Manger singleton shortcut access.
         /// </summary>
         /// <value></value>
-        protected ZOROSUnityManager ROSUnityManager {
-            get {
+        protected ZOROSUnityManager ROSUnityManager
+        {
+            get
+            {
                 return ZOROSUnityManager.Instance;
             }
         }
@@ -49,9 +56,12 @@ namespace ZO.ROS.Unity {
         /// Unique name of the object.  For example: "joint.hinge_from_left_wheel"
         /// </summary>
         /// <value></value>
-        public virtual string Name {
-            get {
-                if (string.IsNullOrEmpty(_name)) {
+        public virtual string Name
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_name))
+                {
                     _name = Type + "_" + gameObject.name;
                 }
                 return _name;
@@ -61,7 +71,8 @@ namespace ZO.ROS.Unity {
         }
 
         // TODO: make a ZOReset in ZOGameObjectBase
-        protected override void ZOReset() {
+        protected override void ZOReset()
+        {
             base.ZOReset();
             // generate the default name
             string dummy = Name;
@@ -75,7 +86,8 @@ namespace ZO.ROS.Unity {
         /// The ZeroSim object type.  For example: "joint.hinge"
         /// </summary>
         /// <value></value>
-        public virtual string Type {
+        public virtual string Type
+        {
             get { return "undefined"; }
         }
 
@@ -85,16 +97,20 @@ namespace ZO.ROS.Unity {
         /// The ZOSim document root
         /// </summary>
         /// <value></value>
-        public ZOSimDocumentRoot DocumentRoot {
-            get {
+        public ZOSimDocumentRoot DocumentRoot
+        {
+            get
+            {
                 // first check if we are the document root
                 ZOSimDocumentRoot docRoot = this.GetComponent<ZOSimDocumentRoot>();
-                if (docRoot == null) {
+                if (docRoot == null)
+                {
                     // search the parents
                     docRoot = this.GetComponentInParent<ZOSimDocumentRoot>();
                 }
 
-                if (docRoot == null) {
+                if (docRoot == null)
+                {
                     Debug.LogWarning("WARNING: document root cannot be accessed!!!");
                     throw new System.Exception("WARNING: document root cannot be accessed!!!");
                 }
@@ -110,8 +126,10 @@ namespace ZO.ROS.Unity {
         /// <summary>
         /// On Unity Start will connect to ROS bridge connect and disconnect events.
         /// </summary>
-        protected override void ZOStart() {
-            if (ZOROSUnityManager.Instance == null) {
+        protected override void ZOStart()
+        {
+            if (ZOROSUnityManager.Instance == null)
+            {
                 return;
             }
 
@@ -123,8 +141,10 @@ namespace ZO.ROS.Unity {
         /// <summary>
         /// On Unity Destroy will disconnect to ROS bridge connect and disconnect events.
         /// </summary>
-        protected override void ZOOnDestroy() {
-            if (ZOROSUnityManager.Instance == null) {
+        protected override void ZOOnDestroy()
+        {
+            if (ZOROSUnityManager.Instance == null)
+            {
                 return;
             }
             ZOROSUnityManager.Instance.ROSBridgeConnectEvent -= OnROSBridgeConnected;
@@ -132,7 +152,7 @@ namespace ZO.ROS.Unity {
         }
 
         #endregion // ZOGameObjectBase
-        
+
         #region ZOROSUnityInterface
         public abstract void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager);
 

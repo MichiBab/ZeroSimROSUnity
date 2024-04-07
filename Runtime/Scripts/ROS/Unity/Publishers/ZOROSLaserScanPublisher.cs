@@ -8,7 +8,8 @@ using ZO.Sensors;
 using ZO.ROS.Unity;
 using ZO.Document;
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
 
     /// <summary>
     /// Publish ROS /sensor/LaserScan message using the ZOLIDAR2D sensor.
@@ -16,7 +17,8 @@ namespace ZO.ROS.Publisher {
     /// </summary>
     [RequireComponent(typeof(ZOROSTransformPublisher))]
     [RequireComponent(typeof(ZOLIDAR2D))]
-    public class ZOROSLaserScanPublisher : ZOROSUnityGameObjectBase {
+    public class ZOROSLaserScanPublisher : ZOROSUnityGameObjectBase
+    {
 
         public ZOLIDAR2D _lidar2DSensor;
 
@@ -24,7 +26,8 @@ namespace ZO.ROS.Publisher {
         /// The 2D LIDAR sensor to publish it's scan data.
         /// </summary>
         /// <value></value>
-        public ZOLIDAR2D LIDAR2DSensor {
+        public ZOLIDAR2D LIDAR2DSensor
+        {
             get => _lidar2DSensor;
             set => _lidar2DSensor = value;
         }
@@ -33,13 +36,17 @@ namespace ZO.ROS.Publisher {
 
 
         private ZOROSTransformPublisher _transformPublisher = null;
-        public ZOROSTransformPublisher TransformPublisher {
-            get {
-                if (_transformPublisher == null) {
+        public ZOROSTransformPublisher TransformPublisher
+        {
+            get
+            {
+                if (_transformPublisher == null)
+                {
                     _transformPublisher = GetComponent<ZOROSTransformPublisher>();
                 }
 
-                if (_transformPublisher == null) {
+                if (_transformPublisher == null)
+                {
                     Debug.LogError("ERROR: ZOROSLaserScanPublisher is missing corresponding ZOROSTransformPublisher");
                 }
                 return _transformPublisher;
@@ -49,38 +56,49 @@ namespace ZO.ROS.Publisher {
         private LaserScanMessage _rosLaserScanMessage = new LaserScanMessage();
 
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
                 Initialize();
             }
         }
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
-            if (LIDAR2DSensor == null) {
-                LIDAR2DSensor = GetComponent<ZOLIDAR2D>();                
+            if (LIDAR2DSensor == null)
+            {
+                LIDAR2DSensor = GetComponent<ZOLIDAR2D>();
             }
 
-            if (ROSTopic == "") {
+            if (ROSTopic == "")
+            {
                 ROSTopic = "scan";
             }
 
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 10;
             }
 
-            if (_parentTransformId == "") {
+            if (_parentTransformId == "")
+            {
                 ZOROSTransformPublisher parentTransformPublisher = transform.parent.GetComponent<ZOROSTransformPublisher>();
-                if (parentTransformPublisher != null) {
+                if (parentTransformPublisher != null)
+                {
                     _parentTransformId = parentTransformPublisher.ChildFrameID;
-                } else {
+                }
+                else
+                {
                     _parentTransformId = "base_footprint";
                 }
             }
         }
 
-        private void Initialize() {
+        private void Initialize()
+        {
             // advertise
             ROSBridgeConnection.Advertise(ROSTopic, _rosLaserScanMessage.MessageType);
 
@@ -90,21 +108,25 @@ namespace ZO.ROS.Publisher {
         }
 
 
-        protected override void ZOOnDestroy() {
+        protected override void ZOOnDestroy()
+        {
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeConnected");
             Initialize();
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeDisconnected");
             ROSBridgeConnection.UnAdvertise(ROSTopic);
         }
 
-        private Task OnPublishLidarScanDelegate(ZOLIDAR2D lidar, string name, float[] ranges) {
+        private Task OnPublishLidarScanDelegate(ZOLIDAR2D lidar, string name, float[] ranges)
+        {
             _rosLaserScanMessage.header.Update();
             _rosLaserScanMessage.header.frame_id = _parentTransformId;
             _rosLaserScanMessage.angle_min = lidar.MinAngleDegrees * Mathf.Deg2Rad;
@@ -122,7 +144,8 @@ namespace ZO.ROS.Publisher {
         }
 
         #region ZOSerializationInterface
-        public override string Type {
+        public override string Type
+        {
             get { return "ros.publisher.scan"; }
         }
 

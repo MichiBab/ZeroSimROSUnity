@@ -11,7 +11,8 @@ using ZO.Document;
 using ZO.Sensors;
 
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
 
     /// <summary>
     /// Publish fake Odometry by just taking the transform of whatever this script is. 
@@ -19,7 +20,8 @@ namespace ZO.ROS.Publisher {
     /// Implemented noise mode: https://blog.lxsang.me/post/id/16
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
-    public class ZOROSFakeOdometryPublisher : ZOROSUnityGameObjectBase {
+    public class ZOROSFakeOdometryPublisher : ZOROSUnityGameObjectBase
+    {
 
         public bool _applyNoise = false;
         public float _a1 = 0.05f;
@@ -27,14 +29,18 @@ namespace ZO.ROS.Publisher {
         public float _a3 = 0.05f;
         public float _a4 = 0.01f;
 
-        public Rigidbody Rigidbody {
-            get {
+        public Rigidbody Rigidbody
+        {
+            get
+            {
                 return gameObject.GetComponent<Rigidbody>();
             }
         }
 
-        public OdometryMessage CurrentOdometryMessage {
-            get {
+        public OdometryMessage CurrentOdometryMessage
+        {
+            get
+            {
                 return _currentOdometryMessage;
             }
         }
@@ -44,37 +50,43 @@ namespace ZO.ROS.Publisher {
         private OdometryMessage _previousOdometryMessage = null;
         private TransformStampedMessage _transformStampedMessage = new TransformStampedMessage();
 
-        public override string Type {
+        public override string Type
+        {
             get { return "publisher.odometry"; }
         }
 
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
-            if (string.IsNullOrEmpty(ROSTopic) == true) {
+            if (string.IsNullOrEmpty(ROSTopic) == true)
+            {
                 ROSTopic = "/odom";
             }
 
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 20;
             }
 
         }
 
-        protected override void ZOFixedUpdateHzSynchronized() {
+        protected override void ZOFixedUpdateHzSynchronized()
+        {
             base.ZOFixedUpdateHzSynchronized();
 
             // publish odometry
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
 
                 // See: http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom
-
+                string rootName = gameObject.transform.root.gameObject.name;
                 _currentOdometryMessage = new OdometryMessage();
 
                 // Publish odom on TF as well
                 _transformStampedMessage.header.Update();
-                _transformStampedMessage.header.frame_id = ZOROSUnityManager.Instance.WorldFrameId; // connect to the world
-                _transformStampedMessage.child_frame_id = "odom";
+                _transformStampedMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId; // connect to the world
+                _transformStampedMessage.child_frame_id = rootName + "_" + "odom";
                 _transformStampedMessage.FromLocalUnityTransformToROS(Rigidbody.transform);
                 ZOROSUnityManager.Instance.BroadcastTransform(_transformStampedMessage);
 
@@ -115,11 +127,13 @@ namespace ZO.ROS.Publisher {
                 _currentOdometryMessage.twist.covariance[35] = 1e3;
 
                 // BUGBUG: not super clear on this being a child of map?
-                _currentOdometryMessage.header.frame_id = ZOROSUnityManager.Instance.WorldFrameId;
-                _currentOdometryMessage.child_frame_id = GetComponent<ZOSimOccurrence>().Name;
+                _currentOdometryMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId;
+                _currentOdometryMessage.child_frame_id = rootName + "_" + GetComponent<ZOSimOccurrence>().Name;
 
-                if (_applyNoise) {
-                    if (_previousOdometryMessage != null) {
+                if (_applyNoise)
+                {
+                    if (_previousOdometryMessage != null)
+                    {
                         ApplyNoise(ref _currentOdometryMessage, _previousOdometryMessage);
                     }
                 }
@@ -133,19 +147,22 @@ namespace ZO.ROS.Publisher {
 
 
 
-        private void Initialize() {
+        private void Initialize()
+        {
             // advertise
             ROSBridgeConnection.Advertise(ROSTopic, OdometryMessage.Type);
 
         }
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOImagePublisher::OnROSBridgeConnected");
             Initialize();
 
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOImagePublisher::OnROSBridgeDisconnected");
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }
@@ -157,7 +174,8 @@ namespace ZO.ROS.Publisher {
         /// </summary>
         /// <param name="currentOdomMessage"></param>
         /// <param name="previousOdomMessage"></param>
-        private void ApplyNoise(ref OdometryMessage currentOdomMessage, OdometryMessage previousOdomMessage) {
+        private void ApplyNoise(ref OdometryMessage currentOdomMessage, OdometryMessage previousOdomMessage)
+        {
 
             double dx = currentOdomMessage.pose.pose.position.x - previousOdomMessage.pose.pose.position.x;
             double dy = currentOdomMessage.pose.pose.position.y - previousOdomMessage.pose.pose.position.y;
@@ -188,7 +206,7 @@ namespace ZO.ROS.Publisher {
 
             currentOdomMessage.pose.pose.position.x += trans * System.Math.Cos(theta1 + rot1);
             currentOdomMessage.pose.pose.position.y += trans * System.Math.Sin(theta1 + rot1);
-            
+
             theta2 += (rot1 + rot2);
 
             Quaternion yawQuaternion = Quaternion.EulerAngles(0, (float)theta2, 0);

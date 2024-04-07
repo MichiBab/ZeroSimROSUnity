@@ -13,26 +13,31 @@ using ZO.ROS.MessageTypes.Geometry;
 using ZO.ROS.MessageTypes.StdSrvs;
 
 
-namespace ZO.Controllers {
+namespace ZO.Controllers
+{
 
     [RequireComponent(typeof(ZOROSJointStatesPublisher))]
     [RequireComponent(typeof(ZOSpotUnityCharacterController))]
-    public class ZOSpotROSController : ZOROSUnityGameObjectBase {
+    public class ZOSpotROSController : ZOROSUnityGameObjectBase
+    {
 
 
         public string _TwistTopicSubscription = "/cmd_vel";
         private TwistMessage _twistMessage = new TwistMessage();
         private TwistWithCovarianceStampedMessage _twistPublishMessage = new TwistWithCovarianceStampedMessage();
         private ZOROSFakeOdometryPublisher _odomPublisher = null;
-        public bool IsClaimed {
+        public bool IsClaimed
+        {
             get; set;
         } = false;
 
-        public bool IsPowered {
+        public bool IsPowered
+        {
             get; set;
         } = false;
 
-        public bool IsStanding {
+        public bool IsStanding
+        {
             get; set;
         } = false;
 
@@ -40,12 +45,14 @@ namespace ZO.Controllers {
 
 
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
             UpdateRateHz = 50;
         }
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
 
             _odomPublisher = GetComponentInChildren<ZOROSFakeOdometryPublisher>(true);
@@ -55,22 +62,26 @@ namespace ZO.Controllers {
 
 
 
-        protected override void ZOUpdate() {
+        protected override void ZOUpdate()
+        {
             base.ZOUpdate();
 
 
         }
 
-        protected override void ZOFixedUpdate() {
+        protected override void ZOFixedUpdate()
+        {
             base.ZOFixedUpdate();
 
 
         }
 
-        protected override void ZOUpdateHzSynchronized() {
+        protected override void ZOUpdateHzSynchronized()
+        {
             base.ZOUpdateHzSynchronized();
 
-            if (_odomPublisher && ROSBridgeConnection.IsConnected == true) {
+            if (_odomPublisher && ROSBridgeConnection.IsConnected == true)
+            {
                 _twistPublishMessage.header = _odomPublisher.CurrentOdometryMessage.header;
                 _twistPublishMessage.twist = _odomPublisher.CurrentOdometryMessage.twist;
                 ROSBridgeConnection.Publish<TwistWithCovarianceStampedMessage>(_twistPublishMessage, "/odometry/twist");
@@ -80,11 +91,13 @@ namespace ZO.Controllers {
 
 
 
-        protected override void ZOOnGUI() {
+        protected override void ZOOnGUI()
+        {
             base.ZOOnGUI();
         }
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
 
             // subscribe to Twist Message (i.e. control)
@@ -97,15 +110,19 @@ namespace ZO.Controllers {
             // claim robot
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("claim",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest claim");
 
-                    if (IsClaimed == true) {
+                    if (IsClaimed == true)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Already claimed"), "claim", false, id);
 
-                    } else {
+                    }
+                    else
+                    {
                         IsClaimed = true;
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "claim", false, id);
 
@@ -118,15 +135,19 @@ namespace ZO.Controllers {
             // release robot claim
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("release",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest release");
 
-                    if (IsClaimed == false) {
+                    if (IsClaimed == false)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not claimed"), "release", false, id);
 
-                    } else {
+                    }
+                    else
+                    {
                         IsClaimed = false;
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "release", false, id);
 
@@ -139,20 +160,27 @@ namespace ZO.Controllers {
             // power on
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("power_on",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest power_on");
 
-                    if (IsPowered == true) {
+                    if (IsPowered == true)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Already powered on"), "power_on", false, id);
 
-                    } else {
-                        if (IsClaimed == true) {
+                    }
+                    else
+                    {
+                        if (IsClaimed == true)
+                        {
                             IsPowered = true;
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "power_on", false, id);
 
-                        } else { // can't power if not claimed
+                        }
+                        else
+                        { // can't power if not claimed
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not claimed.  Run /claim service"), "power_on", false, id);
 
                         }
@@ -166,20 +194,27 @@ namespace ZO.Controllers {
             // power off
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("power_off",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest power_off");
 
-                    if (IsPowered == false) {
+                    if (IsPowered == false)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Already powered off"), "power_off", false, id);
 
-                    } else {
-                        if (IsClaimed == true) {
+                    }
+                    else
+                    {
+                        if (IsClaimed == true)
+                        {
                             IsPowered = false;
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "power_off", false, id);
 
-                        } else { // can't power if not claimed
+                        }
+                        else
+                        { // can't power if not claimed
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not claimed.  Run /claim service"), "power_off", false, id);
 
                         }
@@ -193,27 +228,37 @@ namespace ZO.Controllers {
             // stand
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("stand",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest stand");
 
-                    if (IsStanding == true) {
+                    if (IsStanding == true)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Already standing"), "stand", false, id);
 
-                    } else {
-                        if (IsClaimed == true) {
-                            if (IsPowered == true) {
+                    }
+                    else
+                    {
+                        if (IsClaimed == true)
+                        {
+                            if (IsPowered == true)
+                            {
                                 IsStanding = true;
                                 ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "stand", false, id);
 
-                            } else { // not powereed
+                            }
+                            else
+                            { // not powereed
                                 ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not powered.  Need to power on"), "stand", false, id);
 
 
                             }
 
-                        } else { // can't power if not claimed
+                        }
+                        else
+                        { // can't power if not claimed
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not claimed.  Run /claim service"), "stand", false, id);
 
                         }
@@ -227,27 +272,37 @@ namespace ZO.Controllers {
             // power off
             ROSBridgeConnection.AdvertiseService<TriggerServiceRequest>("sit",
                 TriggerServiceRequest.Type,
-                (rosBridge, msg, id) => {
+                (rosBridge, msg, id) =>
+                {
                     TriggerServiceRequest triggerServiceRequest = msg as TriggerServiceRequest;
 
                     Debug.Log("INFO: ZOSpotController::TriggerServiceRequest sit");
 
-                    if (IsStanding == true) {
+                    if (IsStanding == true)
+                    {
                         ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Already standing"), "sit", false, id);
 
-                    } else {
-                        if (IsClaimed == true) {
-                            if (IsPowered == true) {
+                    }
+                    else
+                    {
+                        if (IsClaimed == true)
+                        {
+                            if (IsPowered == true)
+                            {
                                 IsStanding = false;
                                 ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(true, "Success"), "sit", false, id);
 
-                            } else { // not powereed
+                            }
+                            else
+                            { // not powereed
                                 ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Error: Not powered.  Need to power on"), "sit", false, id);
 
 
                             }
 
-                        } else { // can't power if not claimed
+                        }
+                        else
+                        { // can't power if not claimed
                             ROSBridgeConnection.ServiceResponse<TriggerServiceResponse>(new TriggerServiceResponse(false, "Not claimed.  Run /claim service"), "sit", false, id);
 
                         }
@@ -261,7 +316,8 @@ namespace ZO.Controllers {
 
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             ROSBridgeConnection.UnAdvertise("/odometry/twist");
             ROSBridgeConnection.UnAdvertiseService("claim");
             ROSBridgeConnection.UnAdvertiseService("release");
@@ -276,7 +332,8 @@ namespace ZO.Controllers {
         /// <param name="rosBridgeConnection">ROS Bridge Connection</param>
         /// <param name="msg">TwistMessage</param>
         /// <returns></returns>
-        public Task OnROSTwistMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg) {
+        public Task OnROSTwistMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg)
+        {
             _twistMessage = (TwistMessage)msg;
             // Debug.Log("INFO: Twist Message Received: linear " + _twistMessage.linear.ToString() + " angular: " + _twistMessage.angular.ToString());
 

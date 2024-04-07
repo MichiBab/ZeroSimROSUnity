@@ -8,40 +8,48 @@ using ZO.Physics;
 using ZO.ROS.Unity;
 using ZO.Document;
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
     /// <summary>
     /// Publishes sensor_msgs/JointState messages for a robot.
     /// </summary>
-    public class ZOROSJointStatesPublisher : ZOROSUnityGameObjectBase {
+    public class ZOROSJointStatesPublisher : ZOROSUnityGameObjectBase
+    {
 
         private JointStateMessage _jointStatesMessage = new JointStateMessage();
 
-        protected override void ZOReset() {
+        protected override void ZOReset()
+        {
             base.ZOReset();
             UpdateRateHz = 25.0f;
             ROSTopic = "/joint_states";
         }
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
                 Initialize();
             }
         }
 
-        protected override void ZOOnDestroy() {
+        protected override void ZOOnDestroy()
+        {
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }
 
 
-        private void Initialize() {
+        private void Initialize()
+        {
             // advertise
             ROSBridgeConnection.Advertise(ROSTopic, _jointStatesMessage.MessageType);
 
         }
 
 
-        protected override void ZOUpdateHzSynchronized() {
+        protected override void ZOUpdateHzSynchronized()
+        {
             _jointStatesMessage.header.Update();
             // _jointStatesMessage.header.frame_id = FrameID; TODO???
 
@@ -52,13 +60,16 @@ namespace ZO.ROS.Publisher {
 
             // remove any fixed joints as it makes no sense to have state
             List<ZOJointInterface> joints = new List<ZOJointInterface>();
-            foreach (ZOJointInterface joint in jointsArray) {
+            foreach (ZOJointInterface joint in jointsArray)
+            {
                 string[] typeHierarchy = joint.Type.Split('.');
-                if (typeHierarchy.Contains("fixedjoint")) {
+                if (typeHierarchy.Contains("fixedjoint"))
+                {
                     // skip
                     continue;
                 }
-                if (typeHierarchy.Contains("fixed")) {
+                if (typeHierarchy.Contains("fixed"))
+                {
                     // skip 
                     continue;
                 }
@@ -73,14 +84,16 @@ namespace ZO.ROS.Publisher {
 
             // fill in the arrays
             int i = 0;
-            foreach (ZOJointInterface joint in joints) {
+            foreach (ZOJointInterface joint in joints)
+            {
                 _jointStatesMessage.name[i] = joint.Name;
                 _jointStatesMessage.position[i] = joint.Position;
                 _jointStatesMessage.velocity[i] = joint.Velocity;
                 _jointStatesMessage.effort[i] = joint.Effort;
                 i++;
             }
-            if (ROSBridgeConnection.IsConnected) {
+            if (ROSBridgeConnection.IsConnected)
+            {
                 ROSBridgeConnection.Publish(_jointStatesMessage, ROSTopic, Name);
             }
 
@@ -88,7 +101,8 @@ namespace ZO.ROS.Publisher {
 
         #region ZOSerializationInterface
 
-        public override string Type {
+        public override string Type
+        {
             get { return "ros.publisher.joint_states"; }
         }
 
@@ -96,13 +110,15 @@ namespace ZO.ROS.Publisher {
 
 
         #region ZOROSUnityInterface
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSJointStatesPublisher::OnROSBridgeConnected");
             Initialize();
 
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSJointStatesPublisher::OnROSBridgeDisconnected");
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }

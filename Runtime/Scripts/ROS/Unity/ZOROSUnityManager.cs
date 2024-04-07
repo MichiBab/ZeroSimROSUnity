@@ -16,12 +16,14 @@ using ZO.ROS.MessageTypes.ZOSim;
 using ZO.ROS.Publisher;
 using ZO.Util;
 using System.Collections.Concurrent;
-namespace ZO.ROS.Unity {
+namespace ZO.ROS.Unity
+{
     /// <summary>
     /// Manage ROS with Unity specific functionality.
     /// </summary>
     [ExecuteAlways]
-    public class ZOROSUnityManager : MonoBehaviour {
+    public class ZOROSUnityManager : MonoBehaviour
+    {
 
 
         /// <summary>
@@ -31,7 +33,8 @@ namespace ZO.ROS.Unity {
 
 
 
-        public string Namespace {
+        public string Namespace
+        {
             get => _namespace;
         }
 
@@ -41,7 +44,8 @@ namespace ZO.ROS.Unity {
         /// The singleton ROS Bridge Connection
         /// </summary>
         /// <value></value>
-        public ZOROSBridgeConnection ROSBridgeConnection {
+        public ZOROSBridgeConnection ROSBridgeConnection
+        {
             get { return ZOROSBridgeConnection.Instance; }
         }
 
@@ -75,11 +79,14 @@ namespace ZO.ROS.Unity {
         /// Event that is called when connected to ROS bridge.
         /// </summary>
         /// <value></value>
-        public event ROSBridgeConnectionChangeHandler ROSBridgeConnectEvent {
-            add {
+        public event ROSBridgeConnectionChangeHandler ROSBridgeConnectEvent
+        {
+            add
+            {
                 _connectEvent += value;
             }
-            remove {
+            remove
+            {
                 _connectEvent -= value;
             }
         }
@@ -89,11 +96,14 @@ namespace ZO.ROS.Unity {
         /// Event called when disconnected from ROS Bridge
         /// </summary>
         /// <returns></returns>
-        public event ROSBridgeConnectionChangeHandler ROSBridgeDisconnectEvent {
-            add {
+        public event ROSBridgeConnectionChangeHandler ROSBridgeDisconnectEvent
+        {
+            add
+            {
                 _disconnectEvent += value;
             }
-            remove {
+            remove
+            {
                 _disconnectEvent -= value;
             }
         }
@@ -129,7 +139,8 @@ namespace ZO.ROS.Unity {
         /// The name of the world frame.  Usually "map" or "world".
         /// </summary>
         /// <value></value>
-        public string WorldFrameId {
+        public string WorldFrameId
+        {
             get => _worldFrameId;
         }
         private TFMessage _transformBroadcast = new TFMessage();
@@ -137,9 +148,11 @@ namespace ZO.ROS.Unity {
 
         // publish 
         [SerializeField] public ZOROSTransformPublisher _rootMapTransformPublisher;
-        public ZOROSTransformPublisher RootMapTransform {
+        public ZOROSTransformPublisher RootMapTransform
+        {
             get => _rootMapTransformPublisher;
-            private set {
+            private set
+            {
                 _rootMapTransformPublisher = value;
                 _rootMapTransformPublisher.FrameID = "";
                 _rootMapTransformPublisher.ChildFrameID = WorldFrameId;
@@ -152,8 +165,15 @@ namespace ZO.ROS.Unity {
         /// The ROS "/tf" topic broadcast. Provides an easy way to publish coordinate frame transform information. 
         /// </summary>
         /// <param name="transformStamped"></param> 
-        public void BroadcastTransform(TransformStampedMessage transformStamped) {
-            if (ROSBridgeConnection.IsConnected) {
+        public void BroadcastTransform(TransformStampedMessage transformStamped)
+        {
+            //Filter out bad transfroms
+            if (transformStamped.header.frame_id == transformStamped.child_frame_id)
+            {
+                return;
+            }
+            if (ROSBridgeConnection.IsConnected)
+            {
                 _transformsToBroadcast.Add(transformStamped);
             }
 
@@ -168,9 +188,12 @@ namespace ZO.ROS.Unity {
         /// <summary>
         /// Singleton access to this ROS Unity Manager.
         /// </summary>
-        public static ZOROSUnityManager Instance {
-            get {
-                if (_instance == null) {
+        public static ZOROSUnityManager Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
                     _instance = (ZOROSUnityManager)FindObjectOfType<ZOROSUnityManager>();
                 }
                 return _instance;
@@ -189,46 +212,59 @@ namespace ZO.ROS.Unity {
         /// sim
         /// </summary>
         /// <value></value>
-        public ClockMessage Clock {
+        public ClockMessage Clock
+        {
             get => _clockMessage;
         }
         #endregion // Simulation Clock
 
 
-        private void Awake() {
-            if (_instance == null) {
+        private void Awake()
+        {
+            if (_instance == null)
+            {
                 _instance = this;
                 // DontDestroyOnLoad(this.gameObject);
-            } else if (_instance != this) {
+            }
+            else if (_instance != this)
+            {
                 Debug.LogError("ERROR: Cannot have two ZOROSUnityManager's!!!");
                 Destroy(this.gameObject);
             }
 
         }
 
-        private static string GetArg(string name) {
+        private static string GetArg(string name)
+        {
             var args = System.Environment.GetCommandLineArgs();
-            for (int i = 0; i < args.Length; i++) {
-                if (args[i] == name && args.Length > i + 1) {
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == name && args.Length > i + 1)
+                {
                     return args[i + 1];
                 }
             }
             return null;
         }
 
-        void ParseArguments() {
+        void ParseArguments()
+        {
             //Change port from env variable.
             string port_string = GetArg("--port");
-            if (port_string != null) {
+            if (port_string != null)
+            {
                 Port = Int32.Parse(port_string);
             }
             Debug.Log("Unity Ros Brdige Port set to : " + Port);
         }
 
         // Start is called before the first frame update
-        void Start() {
-            if (Application.IsPlaying(gameObject) == false) { // In Editor Mode 
-                if (RootMapTransform == null) { // create the root map transform if doesn't exist
+        void Start()
+        {
+            if (Application.IsPlaying(gameObject) == false)
+            { // In Editor Mode 
+                if (RootMapTransform == null)
+                { // create the root map transform if doesn't exist
                     RootMapTransform = gameObject.AddComponent<ZOROSTransformPublisher>();
                     RootMapTransform.UpdateRateHz = 10.0f;
                 }
@@ -238,13 +274,16 @@ namespace ZO.ROS.Unity {
                 //     string launchCommand = $"";
                 //     // ZO.Editor.ZODockerManager.DockerRun("zosim", launchCommand);
                 // }
-            } else { // in play mode
+            }
+            else
+            { // in play mode
 
 
                 ParseArguments();
 
                 ROSBridgeConnection.Serialization = _serializationType;
-                ROSBridgeConnection.ROSBridgeConnectEvent += delegate (ZOROSBridgeConnection rosBridge) {
+                ROSBridgeConnection.ROSBridgeConnectEvent += delegate (ZOROSBridgeConnection rosBridge)
+                {
                     Debug.Log("INFO: Connected to ROS Bridge");
 
                     // advertise the transform broadcast
@@ -253,15 +292,19 @@ namespace ZO.ROS.Unity {
                     // advertise the simulation clock
                     rosBridge.Advertise("/clock", Clock.MessageType);
 
-                    try {
+                    try
+                    {
                         // inform listeners we have connected
                         _connectEvent.Invoke(this);
-                    } catch (System.Exception e) {
+                    }
+                    catch (System.Exception e)
+                    {
                         Debug.LogError("ERROR: ZOROSUnityManager Connected Invoke: " + e.ToString());
                     }
                 };
 
-                ROSBridgeConnection.ROSBridgeDisconnectEvent += delegate (ZOROSBridgeConnection rosBridge) {
+                ROSBridgeConnection.ROSBridgeDisconnectEvent += delegate (ZOROSBridgeConnection rosBridge)
+                {
                     Debug.Log("INFO: Disconnected to ROS Bridge");
 
                     // inform listeners we have disconnected
@@ -277,7 +320,8 @@ namespace ZO.ROS.Unity {
                 // run async task.  if cannot connect wait for a couple of seconds and try again
                 ROSBridgeConnection.Port = Port;
                 ROSBridgeConnection.Hostname = Hostname;
-                Task rosBridgeConnectionTask = Task.Run(async () => {
+                Task rosBridgeConnectionTask = Task.Run(async () =>
+                {
                     await ROSBridgeConnection.ConnectAsync();
                 });
 
@@ -286,7 +330,8 @@ namespace ZO.ROS.Unity {
         }
 
 
-        private void OnDestroy() {
+        private void OnDestroy()
+        {
             ROSBridgeConnection.UnAdvertise("/tf");
             // ROSBridgeConnection.UnAdvertiseService(_namespace + "/spawn_zosim_model");
             ROSBridgeConnection.Stop();
@@ -299,17 +344,21 @@ namespace ZO.ROS.Unity {
         private static long last_clock_timestamp = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
         // Update is called once per frame
-        void Update() {
+        void Update()
+        {
             // publish map transform
-            if (ROSBridgeConnection.IsConnected) {
+            if (ROSBridgeConnection.IsConnected)
+            {
                 //check if paused
                 bool paused_state = Time.timeScale <= 0;
                 var time_now = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
                 // transform broadcast
                 _transformBroadcast.transforms = _transformsToBroadcast.ToArray();
-                if (_transformBroadcast.transforms.Length > 0) {
+                if (_transformBroadcast.transforms.Length > 0)
+                {
                     //only if the sim is not paused
-                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS && !paused_state) {
+                    if (time_now - last_tf_timestamp > MIN_TF_TIME_IN_MS && !paused_state)
+                    {
                         last_tf_timestamp = time_now;
                         ROSBridgeConnection.Publish<TFMessage>(_transformBroadcast, "/tf");
                     }
@@ -317,7 +366,8 @@ namespace ZO.ROS.Unity {
                 }
                 // simulation clock
                 Clock.Update();
-                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS && !paused_state) {
+                if (time_now - last_clock_timestamp > MIN_CLOCK_TIME_IN_MS && !paused_state)
+                {
                     last_clock_timestamp = time_now;
                     ROSBridgeConnection.Publish<ClockMessage>(Clock, "/clock");
                 }

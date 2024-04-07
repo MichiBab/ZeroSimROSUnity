@@ -10,7 +10,8 @@ using ZO.ROS.Unity;
 using ZO.Document;
 
 
-namespace ZO.ROS.Publisher {
+namespace ZO.ROS.Publisher
+{
 
     /// <summary>
     /// Publish ROS /sensor/LaserScan message using the ZOLIDAR2D sensor.
@@ -18,7 +19,8 @@ namespace ZO.ROS.Publisher {
     /// </summary>
     [RequireComponent(typeof(ZOROSTransformPublisher))]
     [RequireComponent(typeof(ZOLIDAR3D))]
-    public class ZOROSPointCloud2Publisher : ZOROSUnityGameObjectBase {
+    public class ZOROSPointCloud2Publisher : ZOROSUnityGameObjectBase
+    {
 
         public ZOLIDAR3D _lidar3DSensor;
 
@@ -26,7 +28,8 @@ namespace ZO.ROS.Publisher {
         /// The 2D LIDAR sensor to publish it's scan data.
         /// </summary>
         /// <value></value>
-        public ZOLIDAR3D LIDAR3DSensor {
+        public ZOLIDAR3D LIDAR3DSensor
+        {
             get => _lidar3DSensor;
             set => _lidar3DSensor = value;
         }
@@ -35,13 +38,17 @@ namespace ZO.ROS.Publisher {
 
 
         private ZOROSTransformPublisher _transformPublisher = null;
-        public ZOROSTransformPublisher TransformPublisher {
-            get {
-                if (_transformPublisher == null) {
+        public ZOROSTransformPublisher TransformPublisher
+        {
+            get
+            {
+                if (_transformPublisher == null)
+                {
                     _transformPublisher = GetComponent<ZOROSTransformPublisher>();
                 }
 
-                if (_transformPublisher == null) {
+                if (_transformPublisher == null)
+                {
                     Debug.LogError("ERROR: ZOROSLaserScanPublisher is missing corresponding ZOROSTransformPublisher");
                 }
                 return _transformPublisher;
@@ -51,43 +58,57 @@ namespace ZO.ROS.Publisher {
         private PointCloud2Message _pointCloud2Message = new PointCloud2Message();
 
 
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
-            if (ZOROSBridgeConnection.Instance.IsConnected) {
+            if (ZOROSBridgeConnection.Instance.IsConnected)
+            {
                 Initialize();
             }
         }
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
-            if (LIDAR3DSensor == null) {
+            if (LIDAR3DSensor == null)
+            {
                 LIDAR3DSensor = GetComponent<ZOLIDAR3D>();
             }
 
-            if (ROSTopic == "") {
+            if (ROSTopic == "")
+            {
                 ROSTopic = "point_cloud";
             }
 
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 10;
             }
 
-            if (_parentTransformId == "" || _parentTransformId == null) {
-                if (transform.parent != null) {
+            if (_parentTransformId == "" || _parentTransformId == null)
+            {
+                if (transform.parent != null)
+                {
                     ZOROSTransformPublisher parentTransformPublisher = transform.parent.GetComponent<ZOROSTransformPublisher>();
-                    if (parentTransformPublisher != null) {
+                    if (parentTransformPublisher != null)
+                    {
                         _parentTransformId = parentTransformPublisher.ChildFrameID;
-                    } else {
+                    }
+                    else
+                    {
                         _parentTransformId = ZOROSUnityManager.Instance.WorldFrameId;
                     }
 
-                } else {
+                }
+                else
+                {
                     _parentTransformId = ZOROSUnityManager.Instance.WorldFrameId;
                 }
             }
         }
 
-        private void Initialize() {
+        private void Initialize()
+        {
             // advertise
             ROSBridgeConnection.Advertise(ROSTopic, _pointCloud2Message.MessageType);
 
@@ -97,21 +118,25 @@ namespace ZO.ROS.Publisher {
         }
 
 
-        protected override void ZOOnDestroy() {
+        protected override void ZOOnDestroy()
+        {
             ROSBridgeConnection?.UnAdvertise(ROSTopic);
         }
 
-        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeConnected");
             Initialize();
         }
 
-        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager) {
+        public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
+        {
             Debug.Log("INFO: ZOROSLaserScanPublisher::OnROSBridgeDisconnected");
             ROSBridgeConnection.UnAdvertise(ROSTopic);
         }
 
-        private Task OnPublishLidarScanDelegate(ZOLIDAR3D lidar, string name, NativeArray<Vector3> positions, NativeArray<Vector3> normals) {
+        private Task OnPublishLidarScanDelegate(ZOLIDAR3D lidar, string name, NativeArray<Vector3> positions, NativeArray<Vector3> normals)
+        {
             _pointCloud2Message = PointCloud2Message.CreateXYZPointCloud(positions.ToArray());
             _pointCloud2Message.header.Update();
             _pointCloud2Message.header.frame_id = _parentTransformId;
@@ -122,7 +147,8 @@ namespace ZO.ROS.Publisher {
             return Task.CompletedTask;
         }
 
-        public override string Type {
+        public override string Type
+        {
             get { return "ros.publisher.point_cloud2"; }
         }
 
