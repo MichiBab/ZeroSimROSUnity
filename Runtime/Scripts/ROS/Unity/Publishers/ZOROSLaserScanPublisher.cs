@@ -96,6 +96,7 @@ namespace ZO.ROS.Publisher
                     _parentTransformId = "base_footprint";
                 }
             }
+            _parentTransformId = gameObject.transform.root.gameObject.name + "_" + "base_scan";
         }
 
         private void Initialize()

@@ -57,6 +57,21 @@ namespace ZO.ROS.Publisher
             _transformMessage.header.frame_id = rootName + "_" + FrameID;
             _transformMessage.child_frame_id = rootName + "_" + ChildFrameID;
             _transformMessage.FromLocalUnityTransformToROS(this.transform);
+            /*Sadly we need a workaround for things that are just inherintly different between the sim and the real loomo, e.g. the coordinate system...
+                If someone is better at this than me, fix it in the loomo prefab while keeping the loomo in the sim still usable.
+            */
+            //Set wheel position a little more up, left_wheel_frame or right_wheel_frame
+            if (ChildFrameID == "left_wheel_frame" || ChildFrameID == "right_wheel_frame")
+            {
+                _transformMessage.transform.translation.z += 0.16f;
+            }
+            //Set base_center_ground_frame a little more up
+            if (ChildFrameID == "base_center_ground_frame")
+            {
+                _transformMessage.transform.translation.z += 0.03f;
+            }
+
+
 
 
             ROSUnityManager.BroadcastTransform(_transformMessage);
