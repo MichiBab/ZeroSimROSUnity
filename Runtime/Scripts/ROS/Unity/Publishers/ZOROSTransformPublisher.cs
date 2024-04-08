@@ -71,6 +71,24 @@ namespace ZO.ROS.Publisher
                 _transformMessage.transform.translation.z += 0.03f;
             }
 
+            if (ChildFrameID == "face_cam")
+            {
+                //Rotate y and z by 90 degrees
+                Quaternion rotationY = Quaternion.Euler(0, 180, 0);
+                // Quaternion representing rotation of 90 degrees over the z-axis
+                Quaternion rotationZ = Quaternion.Euler(0, 0, 90);
+                Quaternion originalQuaternion = Quaternion.Euler(0, 0, 0);
+                // Rotate the original quaternion by 90 degrees over y-axis
+                Quaternion rotatedQuaternionY = rotationY * originalQuaternion;
+                // Rotate the quaternion rotated by y-axis by 90 degrees over z-axis
+                Quaternion rotatedQuaternionYZ = rotationZ * rotatedQuaternionY;
+                // Set the rotation of the transform to the new quaternion
+                _transformMessage.transform.rotation.x = rotatedQuaternionYZ.x;
+                _transformMessage.transform.rotation.y = rotatedQuaternionYZ.y;
+                _transformMessage.transform.rotation.z = rotatedQuaternionYZ.z;
+                _transformMessage.transform.rotation.w = rotatedQuaternionYZ.w;
+            }
+
 
 
 
