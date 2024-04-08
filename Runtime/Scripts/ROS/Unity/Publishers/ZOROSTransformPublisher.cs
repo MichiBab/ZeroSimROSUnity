@@ -118,7 +118,7 @@ namespace ZO.ROS.Publisher
             {
                 UpdateRateHz = 10;
             }
-            UpdateRateHz = 20; // force to 20hz
+            UpdateRateHz = 30; // force to 30hz
         }
 
         public override string Type

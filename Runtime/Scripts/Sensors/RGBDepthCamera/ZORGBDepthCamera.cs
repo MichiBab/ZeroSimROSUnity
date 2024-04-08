@@ -10,15 +10,18 @@ using Unity.Burst;
 using Unity.Collections;
 using ZO.Util;
 
-namespace ZO.Sensors {
+namespace ZO.Sensors
+{
 
     /// <summary>
     /// A RGB image + depth camera sensor. 
     /// </summary>
     [RequireComponent(typeof(Camera))]
-    public class ZORGBDepthCamera : ZOGameObjectBase {
+    public class ZORGBDepthCamera : ZOGameObjectBase
+    {
 
-        public enum FrameOutputType {
+        public enum FrameOutputType
+        {
             RGB8D32,
             RGB8D16
         };
@@ -30,7 +33,8 @@ namespace ZO.Sensors {
         /// The Unity Camera associated with this depth camera. (readonly)
         /// </summary>
         /// <value></value>
-        public Camera UnityCamera {
+        public Camera UnityCamera
+        {
             get => _camera;
         }
 
@@ -40,7 +44,8 @@ namespace ZO.Sensors {
         /// Camera frame width in pixels.  (readonly)
         /// </summary>
         /// <value></value>
-        public int Width {
+        public int Width
+        {
             get => _width;
         }
 
@@ -50,7 +55,8 @@ namespace ZO.Sensors {
         /// Camera frame height in pixels. (readonly)
         /// </summary>
         /// <value></value>
-        public int Height {
+        public int Height
+        {
             get => _height;
         }
 
@@ -59,7 +65,8 @@ namespace ZO.Sensors {
         /// </summary>
         /// <value></value>
         float _fieldOfViewDegrees = 0;
-        public float FieldOfViewDegrees {
+        public float FieldOfViewDegrees
+        {
             get => _fieldOfViewDegrees;
         }
 
@@ -68,7 +75,8 @@ namespace ZO.Sensors {
         /// The camera focal length in millimeters.
         /// </summary>
         /// <value></value>
-        public float FocalLengthMM {
+        public float FocalLengthMM
+        {
             get => _focalLengthMM;
         }
 
@@ -77,7 +85,8 @@ namespace ZO.Sensors {
         /// Sensor width and height in millimeters.
         /// </summary>
         /// <value></value>
-        public Vector2 SensorSizeMM {
+        public Vector2 SensorSizeMM
+        {
             get => _sensorSizeMM;
         }
 
@@ -134,44 +143,53 @@ namespace ZO.Sensors {
 
 
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
 
 
             // if camera is not assigned see if we have a camera component on this game object
-            if (_camera == null && TryGetComponent<Camera>(out _camera) == false) {
+            if (_camera == null && TryGetComponent<Camera>(out _camera) == false)
+            {
                 _camera = gameObject.AddComponent<Camera>();
             }
 
             _camera.enabled = false;
 
             // if no post process material then assign default
-            if (_rgbDepthCameraShader == null) {
+            if (_rgbDepthCameraShader == null)
+            {
                 _rgbDepthCameraShader = Resources.Load<Material>("ZORGBDMaterial");
             }
 
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 10;
             }
 
-            if (string.IsNullOrEmpty(Name) == true) {
+            if (string.IsNullOrEmpty(Name) == true)
+            {
                 Name = gameObject.name + "_" + Type;
             }
         }
 
 
-        protected override void ZOAwake() {
+        protected override void ZOAwake()
+        {
             base.ZOAwake();
             _fieldOfViewDegrees = UnityCamera.fieldOfView;
-            if (UnityCamera.usePhysicalProperties) {
+            if (UnityCamera.usePhysicalProperties)
+            {
                 _focalLengthMM = UnityCamera.focalLength;
                 _sensorSizeMM = UnityCamera.sensorSize;
             }
         }
 
         // Start is called before the first frame update
-        protected override void ZOStart() {
-            if (_camera == null) {
+        protected override void ZOStart()
+        {
+            if (_camera == null)
+            {
                 _camera = this.GetComponent<Camera>();
             }
 
@@ -197,29 +215,36 @@ namespace ZO.Sensors {
             _depthBufferFloat = new float[_width * _height];
             _colorPixels24 = new byte[_width * _height * 3];
 
-            if (SystemInfo.supportsAsyncGPUReadback == true) {
+            if (SystemInfo.supportsAsyncGPUReadback == true)
+            {
                 Debug.Log("INFO: Native support for AsyncGPUReadback");
-            } else {
+            }
+            else
+            {
                 Debug.Log("WARNING: NO support for native AsyncGPUReadback. Using 3rd party.");
             }
 
-            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore) {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore)
+            {
                 _isOpenGLRenderer = true;
             }
 
         }
 
-        protected override void ZOFixedUpdateHzSynchronized() {
+        protected override void ZOFixedUpdateHzSynchronized()
+        {
             _camera.Render();
         }
 
-        protected override void ZOUpdate() {
+        protected override void ZOUpdate()
+        {
             DoRenderTextureUpdate();
         }
 
 
         float _averageDepth = 0;
-        protected override void ZOOnGUI() {
+        protected override void ZOOnGUI()
+        {
             base.ZOOnGUI();
             GUI.DrawTexture(new Rect(10, 10, 320, 240), _colorBuffer, ScaleMode.ScaleToFit);
             GUI.DrawTexture(new Rect(10, 242, 320, 240), _depthBuffer, ScaleMode.ScaleToFit);
@@ -233,37 +258,47 @@ namespace ZO.Sensors {
         private float[] _depthBufferFloat;
         private byte[] _colorPixels24;
 
-        private void OnPostRender() {
+        private void OnPostRender()
+        {
             UnityEngine.Profiling.Profiler.BeginSample("ZORGBDepthCamera::OnPostRender");
             Rect cameraRect = new Rect(0, 0, _width, _height);
             _rgbDepthCameraShader.SetTexture("_MainTex", _colorBuffer);
             _rgbDepthCameraShader.SetTexture("_CameraDepthTexture", _depthBuffer);
             Graphics.Blit(_camera.targetTexture, _colorDepthRenderTexture, _rgbDepthCameraShader);
 
-            if (_asyncGPURequests.Count < _maxAsyncGPURequestQueue) {
+            if (_asyncGPURequests.Count < _maxAsyncGPURequestQueue)
+            {
                 _asyncGPURequests.Enqueue(AsyncGPUReadbackPlugin.Request(_colorDepthRenderTexture));
             }
             UnityEngine.Profiling.Profiler.EndSample();
         }
 
-        private void DoRenderTextureUpdate() {
+        private void DoRenderTextureUpdate()
+        {
             // ~~~ Handle Async GPU Readback ~~~ //
-            while (_asyncGPURequests.Count > 0) {
+            while (_asyncGPURequests.Count > 0)
+            {
                 var asyncGPURequest = _asyncGPURequests.Peek();
                 // You need to explicitly ask for an update regularly
                 asyncGPURequest.Update();
 
-                if (asyncGPURequest.hasError) {
+                if (asyncGPURequest.hasError)
+                {
                     Debug.LogError("ERROR: GPU readback error detected.");
                     asyncGPURequest.Dispose();
                     _asyncGPURequests.Dequeue();
-                } else if (asyncGPURequest.done) {
+                }
+                else if (asyncGPURequest.done)
+                {
                     // Get data from the request when it's done
                     float[] rawTextureData = asyncGPURequest.GetRawData_ArrayFloat();
-                    if (OnPublishDelegate != null) {
-                        if (_publishTask == null || _publishTask.IsCompleted) {
+                    if (OnPublishDelegate != null)
+                    {
+                        if (_publishTask == null || _publishTask.IsCompleted)
+                        {
                             float r, g, b, d;
-                            for (int z = 0, c = 0, p = 0; z < (_width * _height); z++, c += 3, p += 4) {
+                            for (int z = 0, c = 0, p = 0; z < (_width * _height); z++, c += 3, p += 4)
+                            {
                                 r = rawTextureData[p];
                                 g = rawTextureData[p + 1];
                                 b = rawTextureData[p + 2];
@@ -279,7 +314,9 @@ namespace ZO.Sensors {
                             }
                             OnPublishDelegate(this, Name, _width, _height, _colorPixels24, _depthBufferFloat);
 
-                        } else {
+                        }
+                        else
+                        {
                             Debug.Log("INFO: ZORGBDepthCamera publish task overflow...");
                         }
 
@@ -289,27 +326,34 @@ namespace ZO.Sensors {
                     asyncGPURequest.Dispose();
 
                     _asyncGPURequests.Dequeue();
-                } else {
+                }
+                else
+                {
                     break;
                 }
             }
 
         }
-        private void OnDestroy() {
+        private void OnDestroy()
+        {
             _depthBufferValuesFloat.Dispose();
             _rgbValues.Dispose();
         }
 
-        public string Type {
+        public string Type
+        {
             get { return "sensor.rgbdebthgcamera"; }
         }
 
         [SerializeField] public string _name;
-        public string Name {
-            get {
+        public string Name
+        {
+            get
+            {
                 return _name;
             }
-            private set {
+            private set
+            {
                 _name = value;
             }
         }
