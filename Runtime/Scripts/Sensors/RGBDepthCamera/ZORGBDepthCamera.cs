@@ -320,12 +320,13 @@ namespace ZO.Sensors
                     float[] rawTextureData = asyncGPURequest.GetRawData_ArrayFloat();
                     if (OnPublishDelegate != null)
                     {
-                        float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
-                        float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
-                        float principalPointX = _width / 2.0f;
-                        float principalPointY = _height / 2.0f;
+
                         if (_publishTask == null || _publishTask.IsCompleted)
                         {
+                            float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
+                            float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
+                            float principalPointX = _width / 2.0f;
+                            float principalPointY = _height / 2.0f;
                             float r, g, b, d;
                             for (int z = 0, c = 0, p = 0; z < (_width * _height); z++, c += 3, p += 4)
                             {
