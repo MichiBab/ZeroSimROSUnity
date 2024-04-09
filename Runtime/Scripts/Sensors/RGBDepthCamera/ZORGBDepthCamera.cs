@@ -320,6 +320,10 @@ namespace ZO.Sensors
                     float[] rawTextureData = asyncGPURequest.GetRawData_ArrayFloat();
                     if (OnPublishDelegate != null)
                     {
+                        float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
+                        float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
+                        float principalPointX = _width / 2.0f;
+                        float principalPointY = _height / 2.0f;
                         if (_publishTask == null || _publishTask.IsCompleted)
                         {
                             float r, g, b, d;
@@ -334,24 +338,13 @@ namespace ZO.Sensors
                                 _colorPixels24[c + 1] = (byte)(g * 255.0f);
                                 _colorPixels24[c + 2] = (byte)(b * 255.0f);
 
-                                _averageDepth = d;
-
-                            }
-
-                            //Undistord the depth image
-                            float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
-                            float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
-                            float principalPointX = _width / 2.0f;
-                            float principalPointY = _height / 2.0f;
-
-                            for (int z = 0; z < _width * _height; z++)
-                            {
-                                d = rawTextureData[z * 4 + 3];
                                 float x = ((z % _width - principalPointX) / focalLengthX) * _undistort_coef_x;
                                 float y = ((z / _width - principalPointY) / focalLengthY) * _undistort_coef_y;
                                 float r2 = (x * x) + (y * y);
                                 float f = 1 + _depthScale * r2;
                                 _depthBufferFloat[z] = d / f;
+                                _averageDepth = d;
+
                             }
 
                             OnPublishDelegate(this, Name, _width, _height, _colorPixels24, _depthBufferFloat);
