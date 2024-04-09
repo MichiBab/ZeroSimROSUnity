@@ -542,7 +542,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -845,7 +845,7 @@ GameObject:
   - component: {fileID: 1335008904924132211}
   - component: {fileID: 1954888129277463904}
   m_Layer: 0
-  m_Name: Loomo
+  m_Name: loomo
   m_TagString: robot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -911,9 +911,9 @@ MonoBehaviour:
   _wheelRadius: 0.12
   _wheelSeperation: 0.42
   _steerOpposite: 0
-  _ROSTopicSubscription: /Loomo/cmd_vel
-  _ROSTopicOdom: /Loomo/odom
-  _ROSTopicVlsOdom: /Loomo/vls_odom
+  _ROSTopicSubscription: /loomo/cmd_vel
+  _ROSTopicOdom: /loomo/odom
+  _ROSTopicVlsOdom: /loomo/vls_odom
 --- !u!114 &1335008904924132211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1363,7 +1363,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -1539,7 +1539,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -1788,7 +1788,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -1834,10 +1834,10 @@ MonoBehaviour:
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
-  _ROSTopic: /Loomo/lidar/scan
+  _ROSTopic: /loomo/lidar/scan
   _name: base_scan
   _lidar2DSensor: {fileID: 8356033286650119428}
-  _parentTransformId: Loomo_base_scan
+  _parentTransformId: loomo_base_scan
 --- !u!1 &2384120799003688682
 GameObject:
   m_ObjectHideFlags: 0
@@ -2006,7 +2006,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -2921,7 +2921,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -3403,7 +3403,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -3581,7 +3581,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -3742,7 +3742,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 10
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -4563,7 +4563,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -4696,7 +4696,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -4804,8 +4804,8 @@ Transform:
   - {fileID: 1902498374587428776}
   - {fileID: 2479970933125334674}
   - {fileID: 6867278593623935151}
-  - {fileID: 3944557933749134279}
   - {fileID: 1408677926364421358}
+  - {fileID: 3944557933749134279}
   m_Father: {fileID: 5284269992654511440}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1066400960709927918
@@ -4833,7 +4833,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -6149,7 +6149,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -6703,21 +6703,21 @@ Camera:
   m_GameObject: {fileID: 7904719205207727671}
   m_Enabled: 0
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0.301127, b: 0.7735849, a: 0}
+  m_projectionMatrixMode: 2
+  m_GateFitMode: 0
+  m_FOVAxisMode: 1
   m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
+  m_ShutterSpeed: 0
+  m_Aperture: 7.83
+  m_FocusDistance: 5.6
+  m_FocalLength: 38.645683
+  m_BladeCount: 3
+  m_Curvature: {x: 0.7, y: 0}
+  m_BarrelClipping: 0
   m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
+  m_SensorSize: {x: 54.12, y: 36.08}
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
@@ -6725,11 +6725,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.01
+  far clip plane: 29.91
+  field of view: 50.04681
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 1
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
@@ -6762,8 +6762,14 @@ MonoBehaviour:
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
   _camera: {fileID: 2147088340776798833}
-  _width: 640
+  _width: 672
   _height: 480
+  _scaling: 1
+  _undistort_coef_x: 0.65
+  _undistort_coef_y: 0.65
+  _sensor_size_x: 0.5
+  _sensor_size_y: 0.5
+  _current_focal_l_in_mm: 0.5
   _rgbDepthCameraShader: {fileID: 2100000, guid: 7c59aa5bee31c319695fba4392cb8768, type: 2}
   _depthScale: 1
   _maxAsyncGPURequestQueue: 2
@@ -6781,21 +6787,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a437ef45c9a9dd830980d2e1fe5d9c54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
   _ROSTopic: 
   _name: ros.publisher.image_rs_depth_optical_frame
   _rgbDepthCameraSensor: {fileID: 6848067867646192383}
-  _rgbImageROSTopic: /Loomo/camera/color/image_raw/compressed
-  _depthROSTopic: /Loomo/camera/depth/image_raw
-  _cameraInfoROSTopic: /Loomo/camera/color/camera_info
-  _depthCameraInfoROSTopic: /Loomo/camera/depth/camera_info
+  _rgbImageROSTopic: /loomo/camera/color/image_raw/compressed
+  _depthROSTopic: /loomo/camera/depth/image_raw
+  _cameraInfoROSTopic: /loomo/camera/color/camera_info
+  _depthCameraInfoROSTopic: /loomo/camera/depth/camera_info
   _parentTransformName: rsdepth_center_neck_fix_frame
   _depthTransformName: rs_depth_optical_frame
   _rgbTransformName: rs_color_optical_frame
-  _cameraRotationDegrees: {x: 0, y: 0, z: 0}
+  _cameraRotationDegrees: {x: 0, y: 90, z: 90}
 --- !u!54 &8329956425107044642
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -7661,7 +7667,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _updateRateHz: 20
+  _updateRateHz: 30
   _debug: 0
   _currentUpdateHz: 0
   _currentFixedUpdateHz: 0
@@ -7761,8 +7767,8 @@ MonoBehaviour:
   _ROSTopic: 
   _name: ros.publisher.image_face_cam
   _rgbCameraSensor: {fileID: 5476929317745967839}
-  _imageROSTopic: /Loomo/camera/face_cam/image_raw/compressed
-  _cameraInfoROSTopic: /Loomo/camera/face_cam/camera_info
+  _imageROSTopic: /loomo/camera/face_cam/image_raw/compressed
+  _cameraInfoROSTopic: /loomo/camera/face_cam/camera_info
 --- !u!1001 &91810500328501330
 PrefabInstance:
   m_ObjectHideFlags: 0
