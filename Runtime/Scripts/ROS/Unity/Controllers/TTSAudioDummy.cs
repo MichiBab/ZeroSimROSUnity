@@ -34,7 +34,7 @@ public class TTSDummy : ZOROSUnityGameObjectBase
             Name = gameObject.name + "_" + Type;
         }
         _ROSTTSTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/text_to_speech";
-        _ROSTTSPubTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/text_to_speech";
+        _ROSTTSPubTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/info";
         _MP3Topic = "/" + gameObject.transform.root.gameObject.name + "/voice/mp3_stream";
 
     }
@@ -70,8 +70,8 @@ public class TTSDummy : ZOROSUnityGameObjectBase
 
 
     public string _ROSTTSTopic = "/voice/text_to_speech";
-    public string _ROSTTSPubTopic = "/voice/text_to_speech";
-    public string _MP3Topic = "voice/mp3_stream";
+    public string _ROSTTSPubTopic = "/voice/info";
+    public string _MP3Topic = "/voice/mp3_stream";
     private StringMessage _ttsMessage = new StringMessage();
     private UInt8MultiArray _mp3Message = new UInt8MultiArray();
 
@@ -89,6 +89,7 @@ public class TTSDummy : ZOROSUnityGameObjectBase
     public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
     {
         ZOROSBridgeConnection.Instance.UnAdvertise(_ROSTTSTopic);
+        ZOROSBridgeConnection.Instance.UnAdvertise(_MP3Topic);
         ZOROSBridgeConnection.Instance.UnAdvertise(_ROSTTSPubTopic);
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeDisconnected");
     }
