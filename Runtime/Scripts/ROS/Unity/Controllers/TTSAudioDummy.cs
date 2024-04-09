@@ -68,7 +68,9 @@ public class TTSDummy : ZOROSUnityGameObjectBase
 
     public string _ROSTTSTopic = "/voice/text_to_speech";
     public string _ROSTTSPubTopic = "/voice/text_to_speech";
+    public string _MP3Topic = "voice/mp3_stream";
     private StringMessage _ttsMessage = new StringMessage();
+    private UInt8MultiArray _mp3Message = new UInt8MultiArray();
 
 
     public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
@@ -76,6 +78,7 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
         // subscribe to Twist Message
         ZOROSBridgeConnection.Instance.Subscribe<StringMessage>(Name, _ROSTTSTopic, _ttsMessage.MessageType, OnROSMessageReceived);
+        ZOROSBridgeConnection.Instance.Subscribe<UInt8MultiArray>(Name, _MP3Topic, _mp3Message.MessageType, OnMP3MessageReceived);
         ZOROSBridgeConnection.Instance.Advertise(_ROSTTSPubTopic, _ttsMessage.MessageType);
 
     }
@@ -92,7 +95,8 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         //For each word in the msg, sleep one second
         //Publish speech started
         StringMessage speechStarted = new StringMessage("SpeechStarted: " + msg);
-        ZOROSBridgeConnection.Instance.Publish<StringMessage>(_ROSTTSPubTopic, speechStarted);
+        ZOROSBridgeConnection.Instance.Publish<StringMessage>(speechStarted, _ROSTTSPubTopic);
+
         string[] words = msg.Split(' ');
         foreach (string word in words)
         {
@@ -101,14 +105,22 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         //Publish done
         StringMessage speechDone = new StringMessage();
         speechDone.data = "SpeechFinished: " + msg;
-        ZOROSBridgeConnection.Instance.Publish<StringMessage>(_ROSTTSPubTopic, speechDone);
+        ZOROSBridgeConnection.Instance.Publish<StringMessage>(speechDone, _ROSTTSPubTopic);
     }
 
+    public Task OnMP3MessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg)
+    {
+        UInt8MultiArray mp3 = (UInt8MultiArray)msg;
+        //Start a new thread to publish the speech
+        Debug.Log("Received mp3");
 
+        return Task.CompletedTask;
+    }
 
     public Task OnROSMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg)
     {
         StringMessage multiArray = (StringMessage)msg;
+        Debug.Log("Received TTS: " + multiArray.data);
         //Start a new thread to publish the speech
         System.Threading.Thread thread = new System.Threading.Thread(() => threadTTSPublisherRoutine(multiArray.data));
         thread.Start();

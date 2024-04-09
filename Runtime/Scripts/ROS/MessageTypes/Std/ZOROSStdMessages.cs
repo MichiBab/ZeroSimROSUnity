@@ -187,6 +187,31 @@ namespace ZO.ROS.MessageTypes.Std
         }
     }
 
+    public class UInt8MultiArray : ZOROSMessageInterface
+    {
+
+        [Newtonsoft.Json.JsonIgnore]
+        public string MessageType { get { return UInt8MultiArray.Type; } }
+
+        [Newtonsoft.Json.JsonIgnore]
+        public static string Type = "std_msgs/UInt8MultiArray";
+
+        public MultiArrayLayout layout { get; set; }
+        public byte[] data { get; set; }
+
+        public UInt8MultiArray()
+        {
+            this.layout = new MultiArrayLayout();
+            this.data = new byte[0];
+        }
+
+        public UInt8MultiArray(MultiArrayLayout layout, byte[] data)
+        {
+            this.layout = layout;
+            this.data = data;
+        }
+    }
+
 
 
 
