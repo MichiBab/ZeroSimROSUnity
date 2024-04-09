@@ -118,7 +118,7 @@ namespace ZO.ROS.Controllers
                 Name = gameObject.name + "_" + Type;
             }
             _ROSTopicOdom = "/" + gameObject.transform.root.gameObject.name + "/odom";
-            _ROSTopicVlsOdom = "/" + gameObject.transform.root.gameObject.name + "/vls_odom";
+            _ROSTopicVlsOdom = "/" + gameObject.transform.root.gameObject.name + "/vls/odom";
             _ROSTopicSubscription = "/" + gameObject.transform.root.gameObject.name + "/cmd_vel";
         }
 
@@ -345,7 +345,7 @@ void GazeboRosDiffDrive::UpdateOdometryEncoder()
         /// </summary>
         public string _ROSTopicSubscription = "/cmd_vel";
         public string _ROSTopicOdom = "/odom";
-        public string _ROSTopicVlsOdom = "/vls_odom";
+        public string _ROSTopicVlsOdom = "/vls/odom";
         private TwistMessage _twistMessage = new TwistMessage();
         private OdometryMessage _odometryMessage = new OdometryMessage();
 
