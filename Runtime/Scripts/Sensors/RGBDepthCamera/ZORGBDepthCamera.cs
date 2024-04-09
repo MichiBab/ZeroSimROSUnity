@@ -360,6 +360,12 @@ namespace ZO.Sensors
 
                         if (_publishTask == null || _publishTask.IsCompleted)
                         {
+                            if (!UnityCamera.usePhysicalProperties)
+                            {
+                                _focalLengthMM = _current_focal_l_in_mm;
+                                _sensorSizeMM = new Vector2(_sensor_size_x, _sensor_size_y);
+                            }
+
                             float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
                             float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
                             float principalPointX = _width / 2.0f;
@@ -376,8 +382,11 @@ namespace ZO.Sensors
                                 _colorPixels24[c + 1] = (byte)(g * 255.0f);
                                 _colorPixels24[c + 2] = (byte)(b * 255.0f);
 
-                                /*This currently only works with the Physical Camera set to 60 fov and the 65mm ALEXA lens,
-                                plus the undistort coefs are both set to 0.65... Changing the fov or the coefs results in
+                                /*This currently only works with the Physical Camera:This currently only works with:
+                                78.29263 vertical fov.
+                                22.16159 focal length
+                                sensor size x: 54.12, y: 36.08.
+                                Changing the fov or the coefs results in
                                 bad depth data again. But with them they are actually stationary and correct, measured
                                 with the 2d lidar next to it.*/
                                 float x = ((z % _width - principalPointX) / focalLengthX) * _undistort_coef_x;
