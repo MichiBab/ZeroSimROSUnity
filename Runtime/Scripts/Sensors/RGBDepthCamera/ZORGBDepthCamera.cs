@@ -383,9 +383,18 @@ namespace ZO.Sensors
                                 _colorPixels24[c + 2] = (byte)(b * 255.0f);
 
                                 /*This currently only works with the Physical Camera:This currently only works with:
-                                78.29263 vertical fov.
+                                With Camera 640 x 480: 
+
                                 22.16159 focal length
                                 sensor size x: 54.12, y: 36.08.
+
+                                or
+
+                                With Camera 672 x 480: (1/4)
+                                38.64568 focal length
+                                seonsor size x: 54.12, y: 36.08
+
+
                                 Changing the fov or the coefs results in
                                 bad depth data again. But with them they are actually stationary and correct, measured
                                 with the 2d lidar next to it.*/
