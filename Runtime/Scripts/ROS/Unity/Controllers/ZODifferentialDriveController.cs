@@ -160,12 +160,6 @@ namespace ZO.ROS.Controllers
                 // Publish odom on TF as well
                 // Get Unity Main Object Name from root object that THIS object is attached to.
                 string rootName = gameObject.transform.root.gameObject.name;
-                _transformMessage.header.Update();
-                _transformMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId; // connect to the world
-                _transformMessage.child_frame_id = rootName + "_" + "odom_combined";
-                _transformMessage.UnityLocalTransform = ConnectedRigidBody.transform;
-                ZOROSUnityManager.Instance.BroadcastTransform(_transformMessage);
-
 
                 // NOTE: Just echoing back the true odometry.  
                 // TODO: calculat the odometry see: CalculateOdometryOpenLoop
@@ -203,11 +197,12 @@ namespace ZO.ROS.Controllers
                 _odometryMessage.twist.covariance[28] = 1e6;
                 _odometryMessage.twist.covariance[35] = 1e3;
 
-                // BUGBUG: not super clear on this being a child of map?
-                _odometryMessage.header.frame_id = rootName + "_" + ZOROSUnityManager.Instance.WorldFrameId;
-                _odometryMessage.child_frame_id = rootName + "_" + "odom";
+                _odometryMessage.header.frame_id = rootName + "_" + "odom";
+                _odometryMessage.child_frame_id = rootName + "_" + "base_link";
 
                 ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, _ROSTopicOdom);
+
+                _odometryMessage.header.frame_id = rootName + "_" + "vls_odom";
                 ZOROSBridgeConnection.Instance.Publish<OdometryMessage>(_odometryMessage, _ROSTopicVlsOdom);
             }
 
