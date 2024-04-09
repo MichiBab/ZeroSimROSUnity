@@ -56,6 +56,7 @@ public class HeadMover : ZOROSUnityGameObjectBase
             Name = gameObject.name + "_" + Type;
         }
 
+        _ROSTopicSubscription = "/" + gameObject.transform.root.gameObject.name + "/head/pitch_yaw_control";
     }
 
     protected override void ZOAwake()

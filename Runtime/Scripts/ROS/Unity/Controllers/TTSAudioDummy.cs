@@ -33,6 +33,9 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         {
             Name = gameObject.name + "_" + Type;
         }
+        _ROSTTSTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/text_to_speech";
+        _ROSTTSPubTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/text_to_speech";
+        _MP3Topic = "/" + gameObject.transform.root.gameObject.name + "/voice/mp3_stream";
 
     }
 
