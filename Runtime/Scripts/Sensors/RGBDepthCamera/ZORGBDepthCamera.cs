@@ -339,6 +339,10 @@ namespace ZO.Sensors
                                 _colorPixels24[c + 1] = (byte)(g * 255.0f);
                                 _colorPixels24[c + 2] = (byte)(b * 255.0f);
 
+                                /*This currently only works with the Physical Camera set to 60 fov and the 65mm ALEXA lens,
+                                plus the undistort coefs are both set to 0.65... Changing the fov or the coefs results in
+                                bad depth data again. But with them they are actually stationary and correct, measured
+                                with the 2d lidar next to it.*/
                                 float x = ((z % _width - principalPointX) / focalLengthX) * _undistort_coef_x;
                                 float y = ((z / _width - principalPointY) / focalLengthY) * _undistort_coef_y;
                                 float r2 = (x * x) + (y * y);
