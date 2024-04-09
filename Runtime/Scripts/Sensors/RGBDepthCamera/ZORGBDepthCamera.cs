@@ -84,6 +84,41 @@ namespace ZO.Sensors
             set => _undistort_coef_y = value;
         }
 
+        public float _sensor_size_x = 0.5f;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public float SensorSizeX
+        {
+            get => _sensor_size_x;
+            set => _sensor_size_x = value;
+        }
+
+        public float _sensor_size_y = 0.5f;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public float SensorSizeY
+        {
+            get => _sensor_size_y;
+            set => _sensor_size_y = value;
+        }
+
+        public float _current_focal_l_in_mm = 0.5f;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public float CurrentFocalLInMM
+        {
+            get => _current_focal_l_in_mm;
+            set => _current_focal_l_in_mm = value;
+        }
 
 
         /// <summary>
@@ -115,6 +150,8 @@ namespace ZO.Sensors
         {
             get => _sensorSizeMM;
         }
+
+
 
 
 
