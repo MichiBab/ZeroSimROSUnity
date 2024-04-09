@@ -3,13 +3,15 @@ using System;
 using ZO.ROS.MessageTypes.Std;
 using ZO.ROS.MessageTypes.Geometry;
 
-namespace ZO.ROS.MessageTypes.Sensor {
+namespace ZO.ROS.MessageTypes.Sensor
+{
 
     /// <summary>
     ///  This message contains an uncompressed image
     ///  (0, 0) is at top-left corner of image
     /// </summary>
-    public class ImageMessage : ZOROSMessageInterface {
+    public class ImageMessage : ZOROSMessageInterface
+    {
 
 
         [Newtonsoft.Json.JsonIgnore]
@@ -46,7 +48,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         public byte[] data { get; set; }
         //  actual matrix data, size is (step * rows)
 
-        public ImageMessage() {
+        public ImageMessage()
+        {
             this.header = new HeaderMessage();
             this.height = 0;
             this.width = 0;
@@ -56,7 +59,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.data = new byte[0];
         }
 
-        public ImageMessage(HeaderMessage header, uint height, uint width, string encoding, byte is_bigendian, uint step, byte[] data) {
+        public ImageMessage(HeaderMessage header, uint height, uint width, string encoding, byte is_bigendian, uint step, byte[] data)
+        {
             this.header = header;
             this.height = height;
             this.width = width;
@@ -66,12 +70,14 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.data = data;
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
     }
 
-    public class CompressedImageMessage : ZOROSMessageInterface {
+    public class CompressedImageMessage : ZOROSMessageInterface
+    {
 
 
         [Newtonsoft.Json.JsonIgnore]
@@ -85,19 +91,22 @@ namespace ZO.ROS.MessageTypes.Sensor {
         public string format { get; set; }
         public byte[] data { get; set; }
 
-        public CompressedImageMessage() {
+        public CompressedImageMessage()
+        {
             this.header = new HeaderMessage();
             this.format = "";
             this.data = new byte[0];
         }
 
-        public CompressedImageMessage(HeaderMessage header, string format, byte[] data) {
+        public CompressedImageMessage(HeaderMessage header, string format, byte[] data)
+        {
             this.header = header;
             this.format = format;
             this.data = data;
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
     }
@@ -111,7 +120,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// will make fairly laser-specific assumptions about this data
     /// <see>http://docs.ros.org/api/sensor_msgs/html/msg/LaserScan.html</see>
     /// </summary>
-    public class LaserScanMessage : ZOROSMessageInterface {
+    public class LaserScanMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return LaserScanMessage.Type; } }
@@ -148,7 +158,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         //  device does not provide intensities, please leave
         //  the array empty.
 
-        public LaserScanMessage() {
+        public LaserScanMessage()
+        {
             this.header = new HeaderMessage();
             this.angle_min = 0.0f;
             this.angle_max = 0.0f;
@@ -161,7 +172,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.intensities = new float[0];
         }
 
-        public LaserScanMessage(HeaderMessage header, float angle_min, float angle_max, float angle_increment, float time_increment, float scan_time, float range_min, float range_max, float[] ranges, float[] intensities) {
+        public LaserScanMessage(HeaderMessage header, float angle_min, float angle_max, float angle_increment, float time_increment, float scan_time, float range_min, float range_max, float[] ranges, float[] intensities)
+        {
             this.header = header;
             this.angle_min = angle_min;
             this.angle_max = angle_max;
@@ -188,7 +200,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// uint8 FLOAT32 = 7
     /// uint8 FLOAT64 = 8
     /// </summary>
-    public class PointFieldMessage : ZOROSMessageInterface {
+    public class PointFieldMessage : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return PointFieldMessage.Type; } }
@@ -229,21 +242,24 @@ namespace ZO.ROS.MessageTypes.Sensor {
         /// <value></value>
         public uint count { get; set; }
 
-        public PointFieldMessage() {
+        public PointFieldMessage()
+        {
             this.name = "";
             this.offset = 0;
             this.datatype = 1;
             this.count = 0;
         }
 
-        public PointFieldMessage(string name, uint offset, byte datatype, uint count) {
+        public PointFieldMessage(string name, uint offset, byte datatype, uint count)
+        {
             this.name = name;
             this.offset = offset;
             this.datatype = datatype;
             this.count = count;
         }
 
-        public static PointFieldMessage[] CreateXYZPointFieldArray(uint count) {
+        public static PointFieldMessage[] CreateXYZPointFieldArray(uint count)
+        {
             PointFieldMessage[] pointFieldMessages = new PointFieldMessage[3];
 
             // x
@@ -283,7 +299,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// (unordered). Point clouds organized as 2d images may be produced by
     /// camera depth sensors such as stereo or time-of-flight.
     /// </summary>
-    public class PointCloud2Message : ZOROSMessageInterface {
+    public class PointCloud2Message : ZOROSMessageInterface
+    {
 
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return PointCloud2Message.Type; } }
@@ -343,7 +360,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         /// <value></value>
         public bool is_dense { get; set; }
 
-        public PointCloud2Message() {
+        public PointCloud2Message()
+        {
             this.header = new HeaderMessage();
             this.height = 0;
             this.width = 0;
@@ -356,7 +374,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
 
         }
 
-        public PointCloud2Message(HeaderMessage header, uint height, uint width, PointFieldMessage[] pointFieldMessages, bool is_bigendian, uint point_step, uint row_step, byte[] data, bool is_dense) {
+        public PointCloud2Message(HeaderMessage header, uint height, uint width, PointFieldMessage[] pointFieldMessages, bool is_bigendian, uint point_step, uint row_step, byte[] data, bool is_dense)
+        {
             this.header = header;
             this.height = height;
             this.width = width;
@@ -369,11 +388,13 @@ namespace ZO.ROS.MessageTypes.Sensor {
 
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
 
-        public static PointCloud2Message CreateXYZPointCloud(UnityEngine.Vector3[] pointsInUnityCoordinates) {
+        public static PointCloud2Message CreateXYZPointCloud(UnityEngine.Vector3[] pointsInUnityCoordinates)
+        {
             byte[] byteData = new byte[sizeof(float) * 3 * pointsInUnityCoordinates.Length];
 
             // public void FromUnityVector3(UnityEngine.Vector3 v) {
@@ -383,7 +404,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             // }
 
             int byteDataOffset = 0;
-            foreach (UnityEngine.Vector3 v in pointsInUnityCoordinates) {
+            foreach (UnityEngine.Vector3 v in pointsInUnityCoordinates)
+            {
                 Buffer.BlockCopy(BitConverter.GetBytes(v.z), 0, byteData, byteDataOffset + (0 * sizeof(float)), sizeof(float));
                 Buffer.BlockCopy(BitConverter.GetBytes(-v.x), 0, byteData, byteDataOffset + (1 * sizeof(float)), sizeof(float));
                 Buffer.BlockCopy(BitConverter.GetBytes(v.y), 0, byteData, byteDataOffset + (2 * sizeof(float)), sizeof(float));
@@ -426,7 +448,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     ///  This is the only way to uniquely associate the joint name with the correct
     ///  states.
     /// </summary>
-    public class JointStateMessage : ZOROSMessageInterface {
+    public class JointStateMessage : ZOROSMessageInterface
+    {
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return JointStateMessage.Type; } }
 
@@ -439,7 +462,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         public double[] velocity { get; set; }
         public double[] effort { get; set; }
 
-        public JointStateMessage() {
+        public JointStateMessage()
+        {
             this.header = new HeaderMessage();
             this.name = new string[0];
             this.position = new double[0];
@@ -447,7 +471,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.effort = new double[0];
         }
 
-        public JointStateMessage(HeaderMessage header, string[] name, double[] position, double[] velocity, double[] effort) {
+        public JointStateMessage(HeaderMessage header, string[] name, double[] position, double[] velocity, double[] effort)
+        {
             this.header = header;
             this.name = name;
             this.position = position;
@@ -455,7 +480,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.effort = effort;
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
     }
@@ -475,7 +501,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// If you are interpreting this message, please check for a value of -1 in the first element of each 
     /// covariance matrix, and disregard the associated estimate.
     /// </summary>
-    public class ImuMessage : ZOROSMessageInterface {
+    public class ImuMessage : ZOROSMessageInterface
+    {
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return ImuMessage.Type; } }
 
@@ -493,7 +520,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         public double[] linear_acceleration_covariance { get; set; }
         //  Row major x, y z 
 
-        public ImuMessage() {
+        public ImuMessage()
+        {
             this.header = new HeaderMessage();
             this.orientation = new QuaternionMessage();
             this.orientation_covariance = new double[9];
@@ -503,7 +531,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.linear_acceleration_covariance = new double[9];
         }
 
-        public ImuMessage(HeaderMessage header, QuaternionMessage orientation, double[] orientation_covariance, Vector3Message angular_velocity, double[] angular_velocity_covariance, Vector3Message linear_acceleration, double[] linear_acceleration_covariance) {
+        public ImuMessage(HeaderMessage header, QuaternionMessage orientation, double[] orientation_covariance, Vector3Message angular_velocity, double[] angular_velocity_covariance, Vector3Message linear_acceleration, double[] linear_acceleration_covariance)
+        {
             this.header = header;
             this.orientation = orientation;
             this.orientation_covariance = orientation_covariance;
@@ -513,7 +542,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.linear_acceleration_covariance = linear_acceleration_covariance;
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
 
@@ -528,7 +558,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// indicates that the full resolution image was captured.
     /// <see>http://docs.ros.org/api/sensor_msgs/html/msg/RegionOfInterest.html</see>
     /// </summary>
-    public class RegionOfInterestMessage : ZOROSMessageInterface {
+    public class RegionOfInterestMessage : ZOROSMessageInterface
+    {
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return RegionOfInterestMessage.Type; } }
 
@@ -570,7 +601,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         /// <value></value>
         public bool do_rectify { get; set; }
 
-        public RegionOfInterestMessage() {
+        public RegionOfInterestMessage()
+        {
             this.x_offset = 0;
             this.y_offset = 0;
             this.height = 0;
@@ -578,7 +610,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.do_rectify = false;
         }
 
-        public RegionOfInterestMessage(uint x_offset, uint y_offset, uint height, uint width, bool do_rectify) {
+        public RegionOfInterestMessage(uint x_offset, uint y_offset, uint height, uint width, bool do_rectify)
+        {
             this.x_offset = x_offset;
             this.y_offset = y_offset;
             this.height = height;
@@ -614,7 +647,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
     /// indicates an uncalibrated camera.
     ///<see>http://docs.ros.org/api/sensor_msgs/html/msg/CameraInfo.html</see>
     /// </summary>
-    public class CameraInfoMessage : ZOROSMessageInterface {
+    public class CameraInfoMessage : ZOROSMessageInterface
+    {
         [Newtonsoft.Json.JsonIgnore]
         public string MessageType { get { return CameraInfoMessage.Type; } }
 
@@ -722,7 +756,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         public uint binning_y { get; set; }
 
         public RegionOfInterestMessage roi { get; set; }
-        public CameraInfoMessage() {
+        public CameraInfoMessage()
+        {
             this.header = new HeaderMessage();
             this.height = 0;
             this.width = 0;
@@ -736,7 +771,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.roi = new RegionOfInterestMessage();
         }
 
-        public CameraInfoMessage(HeaderMessage header, uint height, uint width, string distortion_model, double[] D, double[] K, double[] R, double[] P, uint binning_x, uint binning_y, RegionOfInterestMessage roi) {
+        public CameraInfoMessage(HeaderMessage header, uint height, uint width, string distortion_model, double[] D, double[] K, double[] R, double[] P, uint binning_x, uint binning_y, RegionOfInterestMessage roi)
+        {
             this.header = header;
             this.height = height;
             this.width = width;
@@ -750,7 +786,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
             this.roi = roi;
         }
 
-        public void Update() {
+        public void Update()
+        {
             this.header.Update();
         }
 
@@ -761,7 +798,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         /// <param name="width">width of camera in pixels</param>
         /// <param name="height">height of camera in pixels</param> 
         /// <param name="fovRadians">Field Of View in radians.</param>
-        public void BuildCameraInfo(uint width, uint height, double fovRadians) {
+        public void BuildCameraInfo(uint width, uint height, double fovRadians)
+        {
             this.width = width;
             this.height = height;
             this.distortion_model = "plumb_bob";
@@ -797,7 +835,8 @@ namespace ZO.ROS.MessageTypes.Sensor {
         /// <param name="focalLengthMM">Focal length in millimeters.</param>
         /// <param name="sensorSizeXMM">Sensor width in millimeters.</param>
         /// <param name="sensorSizeYMM">Sensor height in millimeters.</param>
-        public void BuildCameraInfo(uint width, uint height, double focalLengthMM, double sensorSizeXMM, double sensorSizeYMM) {
+        public void BuildCameraInfo(uint width, uint height, double focalLengthMM, double sensorSizeXMM, double sensorSizeYMM)
+        {
             this.width = width;
             this.height = height;
             this.distortion_model = "plumb_bob";

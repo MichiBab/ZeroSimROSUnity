@@ -8,13 +8,15 @@ using ZO.Util.Extensions;
 using ZO.ROS.Unity;
 using ZO.Document;
 
-namespace ZO.Sensors {
+namespace ZO.Sensors
+{
 
 
     /// <summary>
     /// 2D LIDAR Simulation.
     /// </summary>
-    public class ZOLIDAR2D : ZOGameObjectBase {
+    public class ZOLIDAR2D : ZOGameObjectBase
+    {
 
 
         [Header("FOV")]
@@ -41,7 +43,8 @@ namespace ZO.Sensors {
         /// Minimum angle FOV.  For a full 360 set minimum angle to 0 and maximum angle to 360.
         /// </summary>
         /// <value></value>
-        public float MinAngleDegrees {
+        public float MinAngleDegrees
+        {
             get => _minAngleDegrees;
             set => _minAngleDegrees = value;
         }
@@ -50,7 +53,8 @@ namespace ZO.Sensors {
         /// Maximum angle FOV.  For a full 360 set minimum angle to 0 and maximum angle to 360.
         /// </summary>
         /// <value></value>
-        public float MaxAngleDegrees {
+        public float MaxAngleDegrees
+        {
             get => _maxAngleDegrees;
             set => _maxAngleDegrees = value;
         }
@@ -59,7 +63,8 @@ namespace ZO.Sensors {
         /// Minimum distance range of the laser.
         /// </summary>
         /// <value></value>
-        public float MinRangeDistanceMeters {
+        public float MinRangeDistanceMeters
+        {
             get => _minRangeDistanceMeters;
             set => _minRangeDistanceMeters = value;
         }
@@ -68,7 +73,8 @@ namespace ZO.Sensors {
         /// Maximum distance range of the laser
         /// </summary>
         /// <value></value>
-        public float MaxRangeDistanceMeters {
+        public float MaxRangeDistanceMeters
+        {
             get => _maxRangeDistanceMeters;
             set => _maxRangeDistanceMeters = value;
         }
@@ -77,7 +83,8 @@ namespace ZO.Sensors {
         /// The scan increment in degrees of the laser.
         /// </summary>
         /// <value></value>
-        public float AngleIncrementDegrees {
+        public float AngleIncrementDegrees
+        {
             get => _angleIncrementDegrees;
             set => _angleIncrementDegrees = value;
         }
@@ -86,8 +93,10 @@ namespace ZO.Sensors {
         /// Field of View in degrees.
         /// </summary>
         /// <value></value>
-        public float FOVDegrees {
-            get {
+        public float FOVDegrees
+        {
+            get
+            {
                 return MaxAngleDegrees - MinAngleDegrees;
             }
         }
@@ -98,8 +107,10 @@ namespace ZO.Sensors {
         /// Time between scans in seconds.
         /// </summary>
         /// <value>seconds</value>
-        public float ScanTimeSeconds {
-            get {
+        public float ScanTimeSeconds
+        {
+            get
+            {
                 return UpdateRateHz > 0.0f ? 1.0f / UpdateRateHz : 1.0f / 100.0f;
             }
         }
@@ -111,13 +122,16 @@ namespace ZO.Sensors {
         /// of 3d points
         /// </summary>
         /// <value>seconds</value>
-        public float TimeIncrementSeconds {
-            get {
+        public float TimeIncrementSeconds
+        {
+            get
+            {
                 return ScanTimeSeconds / (float)RayCount;
             }
         }
 
-        public int RayCount {
+        public int RayCount
+        {
             get => _rayCount;
         }
 
@@ -129,7 +143,8 @@ namespace ZO.Sensors {
 
         #region ZOGameObjectBase        
         // Start is called before the first frame update
-        protected override void ZOStart() {
+        protected override void ZOStart()
+        {
             base.ZOStart();
             Debug.Log("INFO: ZOLIDAR2D::Start");
             _rayCount = Mathf.RoundToInt(FOVDegrees / AngleIncrementDegrees);
@@ -139,32 +154,40 @@ namespace ZO.Sensors {
         }
 
 
-        protected override void ZOOnValidate() {
+        protected override void ZOOnValidate()
+        {
             base.ZOOnValidate();
-            if (UpdateRateHz == 0) {
+            if (UpdateRateHz == 0)
+            {
                 UpdateRateHz = 10;
             }
-            if (Name == "") {
+            if (Name == "")
+            {
                 Name = gameObject.name + "_" + Type;
             }
         }
 
-        protected override void ZOFixedUpdateHzSynchronized() {
+        protected override void ZOFixedUpdateHzSynchronized()
+        {
             UnityEngine.Profiling.Profiler.BeginSample("ZOLIDAR2D::ZOUpdateHzSynchronized");
             // do raycasts
             // TODO: use batch raycasts like the 3d raycast
-            for (int i = 0; i < _rayCount; i++) {
-                Vector3 axis = new Vector3(0, MinAngleDegrees - AngleIncrementDegrees * i, 0);
+            for (int i = 0; i < _rayCount; i++)
+            {
+                Vector3 axis = new Vector3(0, -1 * MinAngleDegrees - AngleIncrementDegrees * i, 0);
                 Vector3 direction = Quaternion.Euler(axis) * transform.forward;
                 _rays[i] = new Ray(transform.position, direction);
                 _ranges[i] = 0;
 
                 _raycastHits[i] = new RaycastHit();
-                if (UnityEngine.Physics.Raycast(_rays[i], out _raycastHits[i], MaxRangeDistanceMeters)) {
-                    if (_raycastHits[i].distance >= MinRangeDistanceMeters && _raycastHits[i].distance <= MaxRangeDistanceMeters) {
+                if (UnityEngine.Physics.Raycast(_rays[i], out _raycastHits[i], MaxRangeDistanceMeters))
+                {
+                    if (_raycastHits[i].distance >= MinRangeDistanceMeters && _raycastHits[i].distance <= MaxRangeDistanceMeters)
+                    {
                         _ranges[i] = _raycastHits[i].distance;
 
-                        if (IsDebug == true) {
+                        if (IsDebug == true)
+                        {
                             Debug.DrawLine(transform.position, _raycastHits[i].point, Color.green, ScanTimeSeconds);
                         }
                     }
@@ -172,7 +195,8 @@ namespace ZO.Sensors {
             }
 
             // publish
-            if (OnPublishDelegate != null) {
+            if (OnPublishDelegate != null)
+            {
                 OnPublishDelegate(this, Name, _ranges);
             }
 
@@ -182,16 +206,20 @@ namespace ZO.Sensors {
         #endregion // ZOGameObjectBase
 
         #region ZOSerializationInterface
-        public string Type {
+        public string Type
+        {
             get { return "sensor.lidar2d"; }
         }
 
         [SerializeField] public string _name;
-        public string Name {
-            get {
+        public string Name
+        {
+            get
+            {
                 return _name;
             }
-            private set {
+            private set
+            {
                 _name = value;
             }
         }

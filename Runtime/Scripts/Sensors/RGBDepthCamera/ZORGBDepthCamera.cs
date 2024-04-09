@@ -60,6 +60,32 @@ namespace ZO.Sensors
             get => _height;
         }
 
+        public float _undistort_coef_x = 0.65f;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public float UndistortCoefX
+        {
+            get => _undistort_coef_x;
+            set => _undistort_coef_x = value;
+        }
+
+        public float _undistort_coef_y = 0.65f;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public float UndistortCoefY
+        {
+            get => _undistort_coef_y;
+            set => _undistort_coef_y = value;
+        }
+
+
+
         /// <summary>
         /// The cameras field of view in degrees.
         /// </summary>
@@ -307,11 +333,27 @@ namespace ZO.Sensors
                                 _colorPixels24[c + 0] = (byte)(r * 255.0f);
                                 _colorPixels24[c + 1] = (byte)(g * 255.0f);
                                 _colorPixels24[c + 2] = (byte)(b * 255.0f);
-                                _depthBufferFloat[z] = d * _depthScale;
 
                                 _averageDepth = d;
 
                             }
+
+                            //Undistord the depth image
+                            float focalLengthX = _focalLengthMM * _width / _sensorSizeMM.x;
+                            float focalLengthY = _focalLengthMM * _height / _sensorSizeMM.y;
+                            float principalPointX = _width / 2.0f;
+                            float principalPointY = _height / 2.0f;
+
+                            for (int z = 0; z < _width * _height; z++)
+                            {
+                                d = rawTextureData[z * 4 + 3];
+                                float x = ((z % _width - principalPointX) / focalLengthX) * _undistort_coef_x;
+                                float y = ((z / _width - principalPointY) / focalLengthY) * _undistort_coef_y;
+                                float r2 = (x * x) + (y * y);
+                                float f = 1 + _depthScale * r2;
+                                _depthBufferFloat[z] = d / f;
+                            }
+
                             OnPublishDelegate(this, Name, _width, _height, _colorPixels24, _depthBufferFloat);
 
                         }
