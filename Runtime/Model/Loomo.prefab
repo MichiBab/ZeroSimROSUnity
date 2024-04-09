@@ -960,7 +960,7 @@ MonoBehaviour:
   _steerOpposite: 0
   _ROSTopicSubscription: /loomo/cmd_vel
   _ROSTopicOdom: /loomo/odom
-  _ROSTopicVlsOdom: /loomo/vls_odom
+  _ROSTopicVlsOdom: /loomo/vls/odom
 --- !u!114 &1335008904924132211
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5123,7 +5123,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6115840604598295948}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6013e0556113f1e9f95189e724e765fc, type: 3}
   m_Name: 
