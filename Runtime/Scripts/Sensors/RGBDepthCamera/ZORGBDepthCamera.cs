@@ -60,7 +60,7 @@ namespace ZO.Sensors
             get => _height;
         }
 
-        public float _undistort_coef_x = 0.65f;
+        public float _undistort_coef_x = 0.67f;
 
         /// <summary>
         /// 
@@ -72,7 +72,7 @@ namespace ZO.Sensors
             set => _undistort_coef_x = value;
         }
 
-        public float _undistort_coef_y = 0.65f;
+        public float _undistort_coef_y = 0.67f;
 
         /// <summary>
         /// 
