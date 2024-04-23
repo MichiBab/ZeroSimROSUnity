@@ -36,6 +36,7 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         _ROSTTSTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/text_to_speech";
         _ROSTTSPubTopic = "/" + gameObject.transform.root.gameObject.name + "/voice/info";
         _MP3Topic = "/" + gameObject.transform.root.gameObject.name + "/voice/mp3_stream";
+        _SubFlag = "/" + gameObject.transform.root.gameObject.name + "/do_not_subscribe__loomo_connected_signal";
 
     }
 
@@ -74,6 +75,8 @@ public class TTSDummy : ZOROSUnityGameObjectBase
     public string _MP3Topic = "/voice/mp3_stream";
     private StringMessage _ttsMessage = new StringMessage();
     private UInt8MultiArray _mp3Message = new UInt8MultiArray();
+    public string _SubFlag = "/do_not_subscribe__loomo_connected_signal";
+
 
 
     public override void OnROSBridgeConnected(ZOROSUnityManager rosUnityManager)
@@ -81,6 +84,7 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
         // subscribe to Twist Message
         ZOROSBridgeConnection.Instance.Subscribe<StringMessage>(Name, _ROSTTSTopic, _ttsMessage.MessageType, OnROSMessageReceived);
+        ZOROSBridgeConnection.Instance.Subscribe<StringMessage>(Name, _SubFlag, _ttsMessage.MessageType, OnEmpty);
         ZOROSBridgeConnection.Instance.Subscribe<UInt8MultiArray>(Name, _MP3Topic, _mp3Message.MessageType, OnMP3MessageReceived);
         ZOROSBridgeConnection.Instance.Advertise(_ROSTTSPubTopic, _ttsMessage.MessageType);
 
@@ -129,6 +133,11 @@ public class TTSDummy : ZOROSUnityGameObjectBase
         System.Threading.Thread thread = new System.Threading.Thread(() => threadTTSPublisherRoutine(multiArray.data));
         thread.Start();
 
+        return Task.CompletedTask;
+    }
+
+    public Task OnEmpty(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg)
+    {
         return Task.CompletedTask;
     }
 
