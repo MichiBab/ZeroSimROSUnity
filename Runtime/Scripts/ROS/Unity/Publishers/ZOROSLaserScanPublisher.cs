@@ -84,18 +84,7 @@ namespace ZO.ROS.Publisher
                 UpdateRateHz = 10;
             }
 
-            if (_parentTransformId == "")
-            {
-                ZOROSTransformPublisher parentTransformPublisher = transform.parent.GetComponent<ZOROSTransformPublisher>();
-                if (parentTransformPublisher != null)
-                {
-                    _parentTransformId = parentTransformPublisher.ChildFrameID;
-                }
-                else
-                {
-                    _parentTransformId = "base_footprint";
-                }
-            }
+
             _parentTransformId = gameObject.transform.root.gameObject.name + "_" + "base_scan";
         }
 
