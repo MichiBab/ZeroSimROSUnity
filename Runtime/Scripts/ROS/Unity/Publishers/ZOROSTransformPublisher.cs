@@ -63,12 +63,11 @@ namespace ZO.ROS.Publisher
             //Set wheel position a little more up, left_wheel_frame or right_wheel_frame
             if (ChildFrameID == "left_wheel_frame" || ChildFrameID == "right_wheel_frame")
             {
-                _transformMessage.transform.translation.z += 0.16f;
+                //_transformMessage.transform.translation.z += 0.16f;
             }
-            //Set base_center_ground_frame a little more up
             if (ChildFrameID == "base_center_ground_frame")
             {
-                _transformMessage.transform.translation.z += 0.03f;
+                _transformMessage.transform.translation.z -= 0.11f;
             }
 
             if (ChildFrameID == "face_cam")
