@@ -251,7 +251,7 @@ namespace ZO.Sensors {
                     UnityEngine.Profiling.Profiler.BeginSample("Dispose");
                     // You need to explicitly Dispose data after using them
                     req.Dispose();
-
+ 
                     _requests.Dequeue();
                     UnityEngine.Profiling.Profiler.EndSample();
                 } else {

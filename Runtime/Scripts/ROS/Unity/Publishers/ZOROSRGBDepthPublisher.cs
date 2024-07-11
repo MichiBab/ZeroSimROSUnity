@@ -34,7 +34,6 @@ namespace ZO.ROS.Publisher
         public string _depthCameraInfoROSTopic = "depth_registered/camera_info";
 
         [Header("ROS Transforms")]
-        public string _parentTransformName = "world";
         public string _depthTransformName = "depth_tf";
         public string _rgbTransformName = "rgb_tf";
 
@@ -74,11 +73,7 @@ namespace ZO.ROS.Publisher
             _cameraInfoROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/color/camera_info";
             _depthCameraInfoROSTopic = "/" + gameObject.transform.root.gameObject.name + "/camera/depth/camera_info";
 
-            string rootName = gameObject.transform.root.gameObject.name;
-            _colorImageMessage.header.frame_id = rootName + "_" + _rgbTransformName;
-            _depthImageMessage.header.frame_id = rootName + "_" + _depthTransformName;
-            _cameraInfoMessage.header.frame_id = rootName + "_" + _rgbTransformName;
-            _depthInfoMessage.header.frame_id = rootName + "_" + _depthTransformName;
+            
 
         }
 
@@ -108,6 +103,20 @@ namespace ZO.ROS.Publisher
 
             }
 
+            //Initialize the transforms
+            string rootName = gameObject.transform.root.gameObject.name;
+            _colorImageMessage.header.frame_id = rootName + "_" + _rgbTransformName;
+            _depthImageMessage.header.frame_id = rootName + "_" + _depthTransformName;
+            _cameraInfoMessage.header.frame_id = rootName + "_" + _rgbTransformName;
+            _depthInfoMessage.header.frame_id = rootName + "_" + _depthTransformName;
+
+            //parent transform name is where the current gameobject is attached to
+            string _parentTransformName = rootName + "_" + gameObject.transform.parent.gameObject.name;
+
+            _depthTransformMessage.header.frame_id = _parentTransformName;
+            _depthTransformMessage.child_frame_id = rootName + "_" + _depthTransformName;
+            _colorImageTransformMessage.header.frame_id = _parentTransformName;
+            _colorImageTransformMessage.child_frame_id = rootName + "_" + _rgbTransformName;
 
 
         }
@@ -118,38 +127,32 @@ namespace ZO.ROS.Publisher
             Terminate();
         }
 
-        protected override void ZOUpdateHzSynchronized()
-        {
-            base.ZOUpdateHzSynchronized();
-
-            string rootName = gameObject.transform.root.gameObject.name;
-
-
+        private void publishTransforms(){
             // publish TF
             _depthTransformMessage.header.Update();
-            _depthTransformMessage.header.frame_id = rootName + "_" + _parentTransformName;
-            _depthTransformMessage.child_frame_id = rootName + "_" + _depthTransformName;
+            
             // _depthTransformMessage.transform.translation.FromUnityVector3ToROS(Quaternion.Euler(_cameraRotationDegrees) * transform.localPosition);
             _depthTransformMessage.transform.translation.FromUnityVector3ToROS(transform.localPosition);
 
             _depthTransformMessage.transform.rotation.FromUnityQuaternionToROS(Quaternion.Euler(_cameraRotationDegrees) * transform.localRotation);
-
             // _depthTransformMessage.FromLocalUnityTransformToROS(this.transform * );
-
             ROSUnityManager.BroadcastTransform(_depthTransformMessage);
-
             // publish TF
             _colorImageTransformMessage.header.Update();
-            _colorImageTransformMessage.header.frame_id = rootName + "_" + _parentTransformName;
-            _colorImageTransformMessage.child_frame_id = rootName + "_" + _rgbTransformName;
+            
             // _colorImageTransformMessage.FromLocalUnityTransformToROS(this.transform);
             // _colorImageTransformMessage.transform.translation.FromUnityVector3ToROS(Quaternion.Euler(_cameraRotationDegrees) * transform.localPosition);
             _colorImageTransformMessage.transform.translation.FromUnityVector3ToROS(transform.localPosition);
 
             _colorImageTransformMessage.transform.rotation.FromUnityQuaternionToROS(Quaternion.Euler(_cameraRotationDegrees) * transform.localRotation);
-
-
             ROSUnityManager.BroadcastTransform(_colorImageTransformMessage);
+        }
+
+        protected override void ZOUpdateHzSynchronized()
+        {
+            base.ZOUpdateHzSynchronized();
+
+            
 
         }
 
@@ -250,7 +253,7 @@ namespace ZO.ROS.Publisher
             ROSBridgeConnection.Publish<CameraInfoMessage>(_depthInfoMessage, _depthCameraInfoROSTopic, cameraId);
 
             // publish TF
-
+            publishTransforms();
 
             return Task.CompletedTask;
         }

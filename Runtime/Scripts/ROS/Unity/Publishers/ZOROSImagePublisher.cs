@@ -6,7 +6,7 @@ using ZO.Sensors;
 using ZO.ROS.Unity;
 using ZO.Document;
 using System.IO;
-
+using ZO.ROS.MessageTypes.Geometry;
 
 namespace ZO.ROS.Publisher
 {
@@ -34,6 +34,10 @@ namespace ZO.ROS.Publisher
         /// </summary>
         public string _cameraInfoROSTopic = "image/camera_info";
 
+        [Header("ROS Transforms")]
+        public string _camTransformName = "face_cam";
+        public Vector3 _cameraRotationDegrees = new Vector3(270, 270, 0);
+
 
         /// <summary>
         /// The camera sensor that we will publish.
@@ -47,6 +51,7 @@ namespace ZO.ROS.Publisher
 
         private CompressedImageMessage _rosImageMessage = new CompressedImageMessage();
         private CameraInfoMessage _rosCameraInfoMessage = new CameraInfoMessage();
+        private TransformStampedMessage _imageTransformMessage = new TransformStampedMessage();
 
         /// <summary>
         /// The ROS Image message topic to publish to.
@@ -78,6 +83,17 @@ namespace ZO.ROS.Publisher
             {
                 Initialize();
             }
+
+            //Initialize the transforms
+            string rootName = gameObject.transform.root.gameObject.name;
+            _rosImageMessage.header.frame_id = rootName + "_" + _camTransformName;
+            _rosCameraInfoMessage.header.frame_id = rootName + "_" + _camTransformName;
+            //parent transform name is where the current gameobject is attached to
+            string _parentTransformName = rootName + "_" + gameObject.transform.parent.gameObject.name;
+            _imageTransformMessage.header.frame_id = _parentTransformName;
+            _imageTransformMessage.child_frame_id = rootName + "_" + _camTransformName;
+
+
         }
         protected override void ZOOnDestroy()
         {
@@ -155,6 +171,17 @@ namespace ZO.ROS.Publisher
         }
 
 
+        private void publishTransforms(){
+            // publish TF
+            _imageTransformMessage.header.Update();
+            
+            _imageTransformMessage.transform.translation.FromUnityVector3ToROS(transform.localPosition);
+
+            _imageTransformMessage.transform.rotation.FromUnityQuaternionToROS(Quaternion.Euler(_cameraRotationDegrees) * transform.localRotation);
+            ROSUnityManager.BroadcastTransform(_imageTransformMessage);
+        }
+
+
 
         /// <summary>
         /// Publishes raw camera RBG8 data as a ROS Image message.
@@ -169,18 +196,6 @@ namespace ZO.ROS.Publisher
         private Task OnPublishRGBImageDelegate(ZORGBCamera rgbCamera, string cameraId, int width, int height, byte[] rgbData)
         {
 
-            // figure out the transforms
-            ZOROSTransformPublisher transformPublisher = GetComponent<ZOROSTransformPublisher>();
-            if (transformPublisher != null)
-            {
-                _rosImageMessage.header.frame_id = transformPublisher.ChildFrameID;
-                _rosCameraInfoMessage.header.frame_id = transformPublisher.ChildFrameID;
-            }
-            else
-            {
-                _rosImageMessage.header.frame_id = gameObject.transform.root.gameObject.name + "_" + Name;
-                _rosCameraInfoMessage.header.frame_id = gameObject.transform.root.gameObject.name + "_" + Name;
-            }
 
             // setup and send Image message
             _rosImageMessage.header.Update();
@@ -213,6 +228,8 @@ namespace ZO.ROS.Publisher
                 _rosCameraInfoMessage.BuildCameraInfo((uint)RGBCameraSensor.Width, (uint)RGBCameraSensor.Height, (double)RGBCameraSensor.FieldOfViewDegrees);
             }
             ROSBridgeConnection.Publish<CameraInfoMessage>(_rosCameraInfoMessage, _cameraInfoROSTopic, cameraId);
+            publishTransforms();
+
 
             return Task.CompletedTask;
         }
