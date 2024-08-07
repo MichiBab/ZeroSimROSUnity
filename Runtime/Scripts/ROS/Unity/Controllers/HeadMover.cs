@@ -58,7 +58,6 @@ public class HeadMover : ZOROSUnityGameObjectBase
 
         _ROSTopicSubscription = "/" + gameObject.transform.root.gameObject.name + "/head/pitch_yaw_control";
         _ROSDisplayButtonPublishTopic = "/" + gameObject.transform.root.gameObject.name + "/interaction/response";
-        _ROSDisplayButtonSubscribeTopic = "/" + gameObject.transform.root.gameObject.name + "/interaction/input";
     }
 
     protected override void ZOAwake()
@@ -151,7 +150,6 @@ public class HeadMover : ZOROSUnityGameObjectBase
     public string _ROSTopicSubscription = "/head/pitch_yaw_control";
 
     public string _ROSDisplayButtonPublishTopic = "/interaction/response";
-    public string _ROSDisplayButtonSubscribeTopic = "/interaction/input";
     private Float32MultiArray _multiArrayMessage = new Float32MultiArray();
 
 
@@ -160,9 +158,7 @@ public class HeadMover : ZOROSUnityGameObjectBase
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
         // subscribe to Twist Message
         ZOROSBridgeConnection.Instance.Subscribe<Float32MultiArray>(Name, _ROSTopicSubscription, new Float32MultiArray().MessageType, OnROSMessageReceived);
-        //Sub to display
-        ZOROSBridgeConnection.Instance.Subscribe<StringMessage>(Name, _ROSDisplayButtonSubscribeTopic, new StringMessage().MessageType, OnROSButtonMessageReceived);
-    
+        // Just Advertise that we can respond like the real loomo    
         ROSBridgeConnection.Advertise(_ROSDisplayButtonPublishTopic, StringMessage.Type);
     
     }
@@ -170,27 +166,8 @@ public class HeadMover : ZOROSUnityGameObjectBase
     public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
     {
         ZOROSBridgeConnection.Instance.UnAdvertise(_ROSTopicSubscription);
-        ZOROSBridgeConnection.Instance.UnAdvertise(_ROSDisplayButtonSubscribeTopic);
         ZOROSBridgeConnection.Instance.UnAdvertise(_ROSDisplayButtonPublishTopic);
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeDisconnected");
-    }
-
-    public Task OnROSButtonMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg) {
-        StringMessage button = (StringMessage)msg;
-        Debug.Log("Received Button: " + button.data);
-        if (button.data == "yes")
-        {
-            //Republish the message on ButtonPressed
-            ROSBridgeConnection.Publish<StringMessage>(button, _ROSDisplayButtonPublishTopic);
-        }
-        else if (button.data == "no")
-        {
-            ROSBridgeConnection.Publish<StringMessage>(button, _ROSDisplayButtonPublishTopic);
-        }
-        else{
-            Debug.Log("Received unknown button: " + button.data);
-        }
-        return Task.CompletedTask;
     }
 
 
