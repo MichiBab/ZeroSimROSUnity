@@ -147,6 +147,9 @@ public class HeadMover : ZOROSUnityGameObjectBase
     /// To test: `rosrun turtlebot3 turtlebot3_teleop_key`
     /// </summary>
     public string _ROSTopicSubscription = "/head/pitch_yaw_control";
+
+    public string _ROSDisplayButtonPublishTopic = "/interaction/response";
+    public string _ROSDisplayButtonSubscribeTopic = "/interaction/input";
     private Float32MultiArray _multiArrayMessage = new Float32MultiArray();
 
 
@@ -154,13 +157,38 @@ public class HeadMover : ZOROSUnityGameObjectBase
     {
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeConnected");
         // subscribe to Twist Message
-        ZOROSBridgeConnection.Instance.Subscribe<Float32MultiArray>(Name, _ROSTopicSubscription, _multiArrayMessage.MessageType, OnROSMessageReceived);
+        ZOROSBridgeConnection.Instance.Subscribe<Float32MultiArray>(Name, _ROSTopicSubscription, new Float32MultiArray().MessageType, OnROSMessageReceived);
+        //Sub to display
+        ZOROSBridgeConnection.Instance.Subscribe<StringMessage>(Name, _ROSDisplayButtonSubscribeTopic, new StringMessage().MessageType, OnROSButtonMessageReceived);
+    
+        ROSBridgeConnection.Advertise(_ROSDisplayButtonPublishTopic, StringMessage.Type);
+    
     }
 
     public override void OnROSBridgeDisconnected(ZOROSUnityManager rosUnityManager)
     {
         ZOROSBridgeConnection.Instance.UnAdvertise(_ROSTopicSubscription);
+        ZOROSBridgeConnection.Instance.UnAdvertise(_ROSDisplayButtonSubscribeTopic);
+        ZOROSBridgeConnection.Instance.UnAdvertise(_ROSDisplayButtonPublishTopic);
         Debug.Log("INFO: ZODifferentialDriveController::OnROSBridgeDisconnected");
+    }
+
+    public Task OnROSButtonMessageReceived(ZOROSBridgeConnection rosBridgeConnection, ZOROSMessageInterface msg) {
+        StringMessage button = (StringMessage)msg;
+        Debug.Log("Received Button: " + button.data);
+        if (button.data == "yes")
+        {
+            //Republish the message on ButtonPressed
+            ROSBridgeConnection.Publish<StringMessage>(button, _ROSDisplayButtonPublishTopic);
+        }
+        else if (button.data == "no")
+        {
+            ROSBridgeConnection.Publish<StringMessage>(button, _ROSDisplayButtonPublishTopic);
+        }
+        else{
+            Debug.Log("Received unknown button: " + button.data);
+        }
+        return Task.CompletedTask;
     }
 
 
