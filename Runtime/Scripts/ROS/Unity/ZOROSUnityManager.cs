@@ -256,6 +256,33 @@ namespace ZO.ROS.Unity
                 Port = Int32.Parse(port_string);
             }
             Debug.Log("Unity Ros Brdige Port set to : " + Port);
+
+            // Array in form of: "NAME,X,Y,Rotation;..."
+            string robot_starting_pose = GetArg("--robot_starting_poses");
+            if (robot_starting_pose != null)
+            {
+                string[] poses = robot_starting_pose.Split(';');
+                foreach (string pose in poses)
+                {
+                    string[] pose_parts = pose.Split(',');
+                    if (pose_parts.Length == 4) 
+                    {
+                        string name = pose_parts[0];
+                        float x = float.Parse(pose_parts[1]);
+                        float y = float.Parse(pose_parts[2]);
+                        float rotation = float.Parse(pose_parts[3]);
+                        Debug.Log("Setting pose for " + name + " to " + x + "," + y + "," + rotation);
+                        // Set the pose
+                        GameObject go = GameObject.Find(name);
+                        if (go != null)
+                        {
+                            float current_y = go.transform.position.y;
+                            go.transform.position = new Vector3(x, current_y, y); // Since unity is Y up
+                            go.transform.rotation = Quaternion.Euler(0, rotation, 0);
+                        }
+                    }
+                }
+            }
         }
 
         // Start is called before the first frame update
